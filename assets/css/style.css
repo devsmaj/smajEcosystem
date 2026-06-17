@@ -433,3 +433,19 @@ section {
 .hero {
     margin-top: 0;
 }
+
+.scroll-top {
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 50% !important;
+    background: #2563eb !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.scroll-top svg {
+    width: 24px !important;
+    height: 24px !important;
+    stroke: #ffffff !important;
+}
