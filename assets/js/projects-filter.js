@@ -1,29 +1,34 @@
-// Project Filter Script
-document.addEventListener('DOMContentLoaded', function() {
+/**
+ * SMAJ Ecosystem - Ventures Filter Script
+ */
+
+document.addEventListener('DOMContentLoaded', function () {
     const filterBtns = document.querySelectorAll('.filter-btn');
     const projectCards = document.querySelectorAll('.project-card');
 
-    // Project categories mapping
-    const projectCategories = {
-        'All Projects': 'all',
-        'Commerce': ['Commerce', 'Marketplace'],
-        'Services': ['Hub', 'Delivery', 'Jobs', 'Health', 'Education', 'Transport'],
-        'Marketplace': ['Marketplace', 'Agriculture', 'Charity'],
-        'Utilities': ['Utilities', 'Housing', 'Events']
+    if (!filterBtns.length || !projectCards.length) return;
+
+    const ventureCategories = {
+        'All Ventures': 'all',
+        'All': 'all',
+        'SMAJ Labs': ['Labs', 'Innovation'],
+        'SMAJ Products': ['AI Product', 'Identity Product', 'Platform', 'Product'],
+        'SMAJ Partners': ['Partners', 'Partner Venture'],
+        'Future Companies': ['Future Companies', 'Future Venture', 'Venture']
     };
 
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Remove active class from all buttons
-            filterBtns.forEach(b => b.classList.remove('active'));
-            // Add active class to clicked button
+    filterBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            filterBtns.forEach(function (button) {
+                button.classList.remove('active');
+            });
+
             this.classList.add('active');
 
-            const filterValue = this.textContent;
-            const categories = projectCategories[filterValue];
+            const filterValue = this.textContent.trim();
+            const categories = ventureCategories[filterValue] || 'all';
 
-            // Filter projects
-            projectCards.forEach(card => {
+            projectCards.forEach(function (card) {
                 const categorySpan = card.querySelector('.project-category');
                 const projectCategory = categorySpan ? categorySpan.textContent.trim() : '';
 
@@ -35,15 +40,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     shouldShow = categories.includes(projectCategory);
                 }
 
-                // Show or hide with animation
                 if (shouldShow) {
                     card.style.display = 'flex';
-                    setTimeout(() => {
+
+                    setTimeout(function () {
                         card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
                     }, 10);
                 } else {
                     card.style.opacity = '0';
-                    setTimeout(() => {
+                    card.style.transform = 'translateY(20px)';
+
+                    setTimeout(function () {
                         card.style.display = 'none';
                     }, 300);
                 }
