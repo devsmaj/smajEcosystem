@@ -1,9 +1,9 @@
 /**
  * SMAJ Ecosystem - Navigation JavaScript
- * Production-ready mobile menu implementation
+ * Mobile menu + header scroll + active navigation
  */
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     initMobileMenu();
     initHeaderScroll();
     initActiveNavigation();
@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 /**
  * Mobile Menu Handler
- * Manages toggle, overlay interaction, body scroll lock, and animations
  */
 function initMobileMenu() {
     const menuToggle = document.querySelector('.btn-menu-toggle');
@@ -20,15 +19,13 @@ function initMobileMenu() {
     const mobileLinks = document.querySelectorAll('.mobile-nav-link');
     const header = document.querySelector('.header');
     const body = document.body;
-    const animationDuration = 300;
+
     let isAnimating = false;
+    const animationDuration = 300;
 
     if (!menuToggle || !mobileMenu || !mobileOverlay) return;
 
-    /**
-     * Close the mobile menu
-     */
-    const closeMenu = () => {
+    function closeMenu() {
         if (isAnimating) return;
         isAnimating = true;
 
@@ -37,22 +34,19 @@ function initMobileMenu() {
 
         mobileMenu.classList.remove('active');
         mobileOverlay.classList.remove('active');
+
         if (header) {
             header.classList.remove('menu-open');
         }
 
-        // Unlock body scroll
         body.classList.remove('no-scroll');
 
-        setTimeout(() => {
+        setTimeout(function () {
             isAnimating = false;
         }, animationDuration);
-    };
+    }
 
-    /**
-     * Open the mobile menu
-     */
-    const openMenu = () => {
+    function openMenu() {
         if (isAnimating) return;
         isAnimating = true;
 
@@ -61,26 +55,24 @@ function initMobileMenu() {
 
         mobileMenu.classList.add('active');
         mobileOverlay.classList.add('active');
+
         if (header) {
             header.classList.add('menu-open');
         }
 
-        // Lock body scroll
         body.classList.add('no-scroll');
 
-        setTimeout(() => {
+        setTimeout(function () {
             isAnimating = false;
         }, animationDuration);
-    };
+    }
 
-    /**
-     * Toggle menu on hamburger click
-     */
-    menuToggle.addEventListener('click', (e) => {
-        e.stopPropagation();
+    menuToggle.addEventListener('click', function (e) {
         e.preventDefault();
+        e.stopPropagation();
+
         if (window.innerWidth > 992) return;
-        
+
         if (mobileMenu.classList.contains('active')) {
             closeMenu();
         } else {
@@ -88,94 +80,77 @@ function initMobileMenu() {
         }
     });
 
-    /**
-     * Close menu on overlay click
-     */
-    mobileOverlay.addEventListener('click', (e) => {
-        e.stopPropagation();
+    mobileOverlay.addEventListener('click', function () {
         closeMenu();
     });
 
-    /**
-     * Close menu on link click
-     */
-    mobileLinks.forEach((link) => {
-        link.addEventListener('click', (e) => {
-            // Allow page navigation to complete
+    mobileLinks.forEach(function (link) {
+        link.addEventListener('click', function () {
             setTimeout(closeMenu, 100);
         });
     });
 
-    /**
-     * Close menu on escape key
-     */
-    document.addEventListener('keydown', (e) => {
+    mobileMenu.addEventListener('click', function (e) {
+        e.stopPropagation();
+    });
+
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
             closeMenu();
         }
     });
 
-    /**
-     * Handle window resize - close menu on desktop
-     */
-    window.addEventListener('resize', () => {
+    window.addEventListener('resize', function () {
         if (window.innerWidth > 992 && mobileMenu.classList.contains('active')) {
             closeMenu();
         }
-    });
-
-    /**
-     * Prevent menu from closing when clicking inside menu
-     */
-    mobileMenu.addEventListener('click', (e) => {
-        e.stopPropagation();
     });
 }
 
 /**
  * Header Scroll Effects
- * Adds scrolled class and manages header appearance on scroll
  */
 function initHeaderScroll() {
     const header = document.querySelector('.header');
+
     if (!header) return;
 
-    window.addEventListener('scroll', () => {
+    function updateHeader() {
         if (window.scrollY > 50) {
             header.classList.add('scrolled');
         } else {
             header.classList.remove('scrolled');
         }
-    });
+    }
+
+    updateHeader();
+
+    window.addEventListener('scroll', updateHeader);
 }
 
 /**
  * Active Navigation Link Indicator
- * Highlights current page in navigation
  */
 function initActiveNavigation() {
-    const currentPath = window.location.pathname;
-    const currentPage = currentPath.split('/').pop() || 'index.html';
-    
-    // Update desktop nav
-    const desktopLinks = document.querySelectorAll('.nav-desktop .nav-link');
-    desktopLinks.forEach((link) => {
-        const href = link.getAttribute('href');
-        if (href === currentPage || (currentPage === '' && href === 'index.html')) {
-            link.classList.add('active');
-        } else {
-            link.classList.remove('active');
-        }
-    });
+    let currentPage = window.location.pathname.split('/').pop();
 
-    // Update mobile nav
-    const mobileLinks = document.querySelectorAll('.mobile-nav-link');
-    mobileLinks.forEach((link) => {
+    if (!currentPage || currentPage === '') {
+        currentPage = 'index.html';
+    }
+
+    if (currentPage === 'projects.html') {
+        currentPage = 'ventures.html';
+    }
+
+    const allLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
+
+    allLinks.forEach(function (link) {
         const href = link.getAttribute('href');
-        if (href === currentPage || (currentPage === '' && href === 'index.html')) {
+
+        link.classList.remove('active');
+
+        if (href === currentPage) {
             link.classList.add('active');
-        } else {
-            link.classList.remove('active');
         }
     });
 }
