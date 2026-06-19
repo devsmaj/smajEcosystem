@@ -310,8 +310,8 @@ function showApplicationSuccess(record) {
     if (!result) return;
 
     const storageNote = appState.firebaseReady
-        ? 'Your application has been saved to Firebase.'
-        : 'Firebase is not configured yet, so this browser saved a local demo copy.';
+        ? 'Your application has been securely submitted to SMAJ Ecosystem.'
+        : 'Your application was saved locally because the secure submission service could not be reached. Please try again if you do not receive confirmation.';
 
     result.hidden = false;
     result.innerHTML = `
@@ -359,7 +359,7 @@ function initEditApplication() {
 
     editPanel.innerHTML = `
         <h2>${record.application_id}</h2>
-        <p class="form-note">Local demo record loaded. Firebase edit/save can be enabled after Firestore security rules are configured.</p>
+        <p class="form-note">Application record loaded. Secure online editing will be enabled after the review workflow is finalized.</p>
         <ul class="application-review-list">${fields}</ul>
     `;
 }
