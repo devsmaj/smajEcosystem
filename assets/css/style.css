@@ -1292,10 +1292,23 @@ section {
 }
 
 .preloader-logo-img {
+    animation: preloaderLogoZoom 1.05s ease-in-out infinite alternate;
     border-radius: 50%;
     height: 82px;
     object-fit: cover;
     width: 82px;
+}
+
+@keyframes preloaderLogoZoom {
+    from {
+        opacity: 0.72;
+        transform: scale(0.72);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1.08);
+    }
 }
 
 .animate-on-scroll {
