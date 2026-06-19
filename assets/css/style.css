@@ -900,6 +900,204 @@ section {
     margin: 12px 0 0 20px;
 }
 
+/* Application forms */
+
+.application-section {
+    background: var(--light-bg);
+}
+
+.application-layout {
+    align-items: start;
+    display: grid;
+    gap: 30px;
+    grid-template-columns: minmax(260px, 0.42fr) minmax(0, 1fr);
+}
+
+.application-aside,
+.application-card,
+.application-result {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(16, 24, 39, 0.06);
+}
+
+.application-aside {
+    padding: 30px;
+    position: sticky;
+    top: 104px;
+}
+
+.application-kicker {
+    color: var(--primary-color);
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+}
+
+.application-aside h2 {
+    font-size: 30px;
+    line-height: 1.1;
+    margin-bottom: 14px;
+}
+
+.application-aside p,
+.form-section-title p,
+.form-note {
+    color: var(--text-secondary);
+}
+
+.application-steps {
+    display: grid;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.application-steps li {
+    align-items: flex-start;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 10px;
+}
+
+.application-steps strong {
+    color: var(--primary-color);
+}
+
+.application-card {
+    padding: 30px;
+}
+
+.application-edit-card {
+    margin: 0 auto;
+    max-width: 900px;
+}
+
+.form-section-title {
+    border-bottom: 1px solid var(--line);
+    margin: 0 0 22px;
+    padding-bottom: 14px;
+}
+
+.form-section-title:not(:first-child) {
+    margin-top: 34px;
+}
+
+.form-section-title h3 {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.form-grid {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.form-wide {
+    grid-column: 1 / -1;
+}
+
+.form-group input[type="file"] {
+    background: #f9fafb;
+    cursor: pointer;
+}
+
+.form-note {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 8px;
+    font-size: 14px;
+    margin: 24px 0;
+    padding: 14px 16px;
+}
+
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.application-status {
+    font-weight: 800;
+    margin-top: 16px;
+}
+
+.application-status[data-status="success"] {
+    color: #047857;
+}
+
+.application-status[data-status="error"] {
+    color: #b91c1c;
+}
+
+.application-status[data-status="info"] {
+    color: var(--text-secondary);
+}
+
+.application-result {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    margin-top: 24px;
+    padding: 24px;
+}
+
+.application-result h3 {
+    color: #047857;
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.application-result-grid {
+    display: grid;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.application-result-grid div {
+    background: var(--white);
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 14px;
+}
+
+.application-result-grid span {
+    color: var(--text-secondary);
+    display: block;
+    font-size: 13px;
+    font-weight: 900;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.application-result-grid strong,
+.application-result-grid a {
+    color: var(--secondary-color);
+    overflow-wrap: anywhere;
+}
+
+.application-review-list {
+    display: grid;
+    gap: 10px;
+    list-style: none;
+    margin-top: 20px;
+}
+
+.application-review-list li {
+    background: var(--light-bg);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    padding: 12px 14px;
+}
+
+.application-review-list strong {
+    color: var(--secondary-color);
+}
+
 /* Team */
 
 .team-member {
@@ -1133,12 +1331,17 @@ section {
 
     .hero .container,
     .grid-2,
-    .contact-grid {
+    .contact-grid,
+    .application-layout {
         grid-template-columns: 1fr;
     }
 
     .hero {
         padding-top: 132px;
+    }
+
+    .application-aside {
+        position: static;
     }
 }
 
@@ -1199,8 +1402,13 @@ section {
         grid-template-columns: 1fr;
     }
 
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
     .hero-buttons,
-    .cta-buttons {
+    .cta-buttons,
+    .form-actions {
         align-items: stretch;
         flex-direction: column;
     }

@@ -22,11 +22,15 @@ The ecosystem is built around four operating pillars:
 - **Home** - hero, ecosystem overview, venture-builder positioning, featured ventures, and insights.
 - **About** - mission, values, structure, and leadership.
 - **Ventures** - portfolio-style grid for SMAJ Ecosystem, Labs, Ventures, Partners, products, and future companies.
-- **Partnerships** - founder, technology, and strategic partnership paths.
+- **Partnerships** - founder, technology, and strategic partnership paths with dedicated application forms.
 - **Insights** - articles and updates about startup building, AI, innovation, and SMAJ's journey.
 - **Contact** - contact details, social links, map, and partnership form.
 - **Legal** - privacy policy, terms of service, cookie policy, and disclaimer.
 - **Success** - confirmation page for received messages.
+- **Founder Application** - founder/startup application form with file upload fields.
+- **Builder Application** - developer, AI builder, designer, and product collaborator application form.
+- **Partner Application** - strategic company or organization partnership application form.
+- **Edit Application** - tokenized application review page for generated edit links.
 
 ## Technology Stack
 
@@ -46,6 +50,10 @@ smajEcosystem/
 |-- about.html
 |-- ventures.html
 |-- partnerships.html
+|-- founder-application.html
+|-- builder-application.html
+|-- partner-application.html
+|-- edit-application.html
 |-- insights.html
 |-- contact.html
 |-- legal.html
@@ -58,6 +66,7 @@ smajEcosystem/
     |   |-- main.js
     |   |-- navigation.js
     |   |-- projects-filter.js
+    |   |-- application-form.js
     |-- images/
         |-- logo.jpg
         |-- logo.svg
@@ -86,4 +95,17 @@ http://localhost:8000
 
 ## Current Status
 
-The site is fully built as a responsive static SMAJ Ecosystem website with completed pages, shared navigation, mobile menu behavior, scroll animations, venture filtering, insight filtering, contact form UI, and legal content.
+The site is fully built as a responsive static SMAJ Ecosystem website with completed pages, shared navigation, mobile menu behavior, scroll animations, venture filtering, insight filtering, dedicated application forms, contact form UI, and legal content.
+
+## Application System
+
+The application pages are ready for a GitHub Pages + Firebase setup:
+
+- `founder-application.html` saves Founder Partnership applications.
+- `builder-application.html` saves Technology Builder applications.
+- `partner-application.html` saves Strategic Partner applications.
+- `edit-application.html` opens generated edit links with `id` and `token` query parameters.
+
+The shared script is `assets/js/application-form.js`.
+
+By default, Firebase and EmailJS keys are empty. In that state, forms generate an application ID and save a local demo record in the browser. To make the system production-ready, add a Firebase project config, configure Firestore security rules, configure Firebase Storage rules, and add EmailJS service/template IDs or replace the email hook with Firebase Cloud Functions and an email provider.

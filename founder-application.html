@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Apply for a Founder Partnership with SMAJ Ecosystem.">
+    <title>Founder Application | SMAJ Ecosystem</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+    <link rel="icon" type="image/png" href="assets/images/logo.jpg">
+</head>
+<body>
+    <div class="preloader">
+        <div class="preloader-logo">
+            <img src="assets/images/logo.jpg" alt="SMAJ Ecosystem Logo" class="preloader-logo-img">
+        </div>
+    </div>
+
+    <header class="header">
+        <div class="header-container">
+            <div class="header-inner">
+                <a href="index.html" class="logo-wrap">
+                    <img src="assets/images/logo.jpg" alt="SMAJ Ecosystem Logo" class="logo">
+                </a>
+                <nav class="nav-desktop" id="primary-navigation">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="about.html" class="nav-link">About</a>
+                    <a href="ventures.html" class="nav-link">Ventures</a>
+                    <a href="partnerships.html" class="nav-link active">Partnerships</a>
+                    <a href="insights.html" class="nav-link">Insights</a>
+                    <a href="contact.html" class="nav-link">Contact</a>
+                </nav>
+                <a href="contact.html" class="btn btn-nav-cta">Partner With Us</a>
+                <button class="btn-menu-toggle" type="button" aria-expanded="false" aria-label="Toggle menu">
+                    <span class="icon-open">☰</span>
+                    <span class="icon-close">✖</span>
+                </button>
+            </div>
+        </div>
+        <div class="mobile-menu-overlay"></div>
+        <nav class="mobile-menu">
+            <a href="index.html" class="mobile-nav-link">Home</a>
+            <a href="about.html" class="mobile-nav-link">About</a>
+            <a href="ventures.html" class="mobile-nav-link">Ventures</a>
+            <a href="partnerships.html" class="mobile-nav-link active">Partnerships</a>
+            <a href="insights.html" class="mobile-nav-link">Insights</a>
+            <a href="contact.html" class="mobile-nav-link">Contact</a>
+            <a href="contact.html" class="btn btn-nav-cta btn-mobile-cta">Partner With Us</a>
+        </nav>
+    </header>
+
+    <section class="page-header">
+        <div class="container">
+            <div class="page-header-content">
+                <h1>Founder Partnership Application</h1>
+                <p>Tell SMAJ about your startup, project, team, and why you want to build under the ecosystem.</p>
+                <div class="breadcrumb">
+                    <a href="index.html">Home</a>
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <a href="partnerships.html">Partnerships</a>
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Founder Application</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="application-section">
+        <div class="container">
+            <div class="application-layout">
+                <aside class="application-aside">
+                    <span class="application-kicker">Founder Path</span>
+                    <h2>Build your company with SMAJ.</h2>
+                    <p>Use this form for startup ideas, early products, founder-led projects, and companies that want venture-building support.</p>
+                    <ul class="application-steps">
+                        <li><strong>1.</strong> Submit your project details</li>
+                        <li><strong>2.</strong> Receive an application ID</li>
+                        <li><strong>3.</strong> Save your edit link</li>
+                        <li><strong>4.</strong> SMAJ reviews fit and next steps</li>
+                    </ul>
+                </aside>
+
+                <div class="application-card">
+                    <form data-application-form="founder" data-application-prefix="FND">
+                        <div class="form-section-title">
+                            <h3>Founder Details</h3>
+                            <p>Tell us who you are and how to reach you.</p>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group"><label for="fullName">Full Name</label><input id="fullName" name="fullName" type="text" required></div>
+                            <div class="form-group"><label for="email">Email</label><input id="email" name="email" type="email" required></div>
+                            <div class="form-group"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" required></div>
+                            <div class="form-group"><label for="country">Country</label><input id="country" name="country" type="text" required></div>
+                            <div class="form-group"><label for="linkedin">LinkedIn</label><input id="linkedin" name="linkedin" type="url" placeholder="https://linkedin.com/in/..."></div>
+                            <div class="form-group"><label for="github">GitHub</label><input id="github" name="github" type="url" placeholder="https://github.com/..."></div>
+                            <div class="form-group form-wide"><label for="portfolio">Portfolio</label><input id="portfolio" name="portfolio" type="url" placeholder="https://..."></div>
+                        </div>
+
+                        <div class="form-section-title">
+                            <h3>Startup or Project</h3>
+                            <p>Share the opportunity, traction, and current stage.</p>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group"><label for="projectName">Startup / Project Name</label><input id="projectName" name="projectName" type="text" required></div>
+                            <div class="form-group"><label for="projectWebsite">Project Website</label><input id="projectWebsite" name="projectWebsite" type="url" placeholder="https://..."></div>
+                            <div class="form-group"><label for="currentStage">Current Stage</label><select id="currentStage" name="currentStage" required><option value="">Select stage</option><option>Idea</option><option>Prototype</option><option>MVP</option><option>Launched</option><option>Growing</option></select></div>
+                            <div class="form-group"><label for="teamSize">Team Size</label><input id="teamSize" name="teamSize" type="number" min="1" required></div>
+                            <div class="form-group form-wide"><label for="projectDescription">Project Description</label><textarea id="projectDescription" name="projectDescription" required></textarea></div>
+                            <div class="form-group form-wide"><label for="problemSolved">Problem Solved</label><textarea id="problemSolved" name="problemSolved" required></textarea></div>
+                            <div class="form-group"><label for="pitchDeck">Upload Pitch Deck</label><input id="pitchDeck" name="pitchDeck" type="file" accept=".pdf,.ppt,.pptx"></div>
+                            <div class="form-group"><label for="screenshots">Upload Screenshots</label><input id="screenshots" name="screenshots" type="file" accept="image/*,.pdf" multiple></div>
+                            <div class="form-group form-wide"><label for="whySmaj">Why do you want to build with SMAJ?</label><textarea id="whySmaj" name="whySmaj" required></textarea></div>
+                        </div>
+
+                        <p class="form-note">Firebase is required for secure cloud database and file storage. Until configured, this form saves a local demo record in your browser.</p>
+                        <div class="form-actions">
+                            <a href="partnerships.html" class="btn btn-outline">Back</a>
+                            <button type="submit" class="btn btn-primary">Submit Founder Application</button>
+                        </div>
+                        <p class="application-status" data-application-status></p>
+                    </form>
+                    <div class="application-result" data-application-result hidden></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2026 SMAJ Ecosystem. All rights reserved.</p>
+                <div class="footer-legal"><a href="legal.html">Privacy Policy</a><a href="legal.html">Terms of Service</a></div>
+            </div>
+        </div>
+    </footer>
+
+    <div class="scroll-top"><svg viewBox="0 0 24 24" fill="none"><path d="M18 15L12 9L6 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/navigation.js"></script>
+    <script type="module" src="assets/js/application-form.js"></script>
+</body>
+</html>
