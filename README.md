@@ -109,3 +109,23 @@ The application pages are ready for a GitHub Pages + Firebase setup:
 The shared script is `assets/js/application-form.js`.
 
 By default, Firebase and EmailJS keys are empty. In that state, forms generate an application ID and save a local demo record in the browser. To make the system production-ready, add a Firebase project config, configure Firestore security rules, configure Firebase Storage rules, and add EmailJS service/template IDs or replace the email hook with Firebase Cloud Functions and an email provider.
+
+EmailJS templates must use these exact variables:
+
+```text
+{{application_id}}
+{{application_type}}
+{{applicant_name}}
+{{applicant_email}}
+{{phone}}
+{{country}}
+{{linkedin}}
+{{github}}
+{{portfolio}}
+{{project_name}}
+{{project_website}}
+{{stage}}
+{{message}}
+{{edit_link}}
+{{submitted_at}}
+```

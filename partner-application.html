@@ -75,24 +75,27 @@
                 </aside>
 
                 <div class="application-card">
-                    <form data-application-form="strategic-partner" data-application-prefix="PRT">
+                    <form data-application-form="Strategic Partnership" data-application-prefix="PRT">
+                        <input type="hidden" name="github" value="">
                         <div class="form-section-title"><h3>Company Details</h3><p>Tell us about the organization and representative.</p></div>
                         <div class="form-grid">
-                            <div class="form-group"><label for="companyName">Company Name</label><input id="companyName" name="companyName" type="text" required></div>
-                            <div class="form-group"><label for="representativeName">Founder / Representative Name</label><input id="representativeName" name="representativeName" type="text" required></div>
-                            <div class="form-group"><label for="email">Email</label><input id="email" name="email" type="email" required></div>
+                            <div class="form-group"><label for="project_name">Company Name</label><input id="project_name" name="project_name" type="text" required></div>
+                            <div class="form-group"><label for="applicant_name">Founder / Representative Name</label><input id="applicant_name" name="applicant_name" type="text" required></div>
+                            <div class="form-group"><label for="applicant_email">Email</label><input id="applicant_email" name="applicant_email" type="email" required></div>
                             <div class="form-group"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" required></div>
-                            <div class="form-group"><label for="website">Website</label><input id="website" name="website" type="url" placeholder="https://..."></div>
+                            <div class="form-group"><label for="country">Country</label><input id="country" name="country" type="text" required></div>
+                            <div class="form-group"><label for="project_website">Website</label><input id="project_website" name="project_website" type="url" placeholder="https://..."></div>
                             <div class="form-group"><label for="linkedin">LinkedIn</label><input id="linkedin" name="linkedin" type="url" placeholder="https://linkedin.com/company/..."></div>
-                            <div class="form-group form-wide"><label for="companyType">Company Type</label><select id="companyType" name="companyType" required><option value="">Select type</option><option>Startup</option><option>SME</option><option>Enterprise</option><option>Investor</option><option>Government / Institution</option><option>Education / Research</option><option>Other</option></select></div>
+                            <div class="form-group"><label for="portfolio">Portfolio / Profile Link</label><input id="portfolio" name="portfolio" type="url" placeholder="https://..."></div>
+                            <div class="form-group form-wide"><label for="stage">Company Type</label><select id="stage" name="stage" required><option value="">Select type</option><option>Startup</option><option>SME</option><option>Enterprise</option><option>Investor</option><option>Government / Institution</option><option>Education / Research</option><option>Other</option></select></div>
                         </div>
 
                         <div class="form-section-title"><h3>Partnership Goal</h3><p>Explain what you want to create with SMAJ.</p></div>
                         <div class="form-grid">
-                            <div class="form-group form-wide"><label for="partnershipGoal">Partnership Goal</label><textarea id="partnershipGoal" name="partnershipGoal" required></textarea></div>
-                            <div class="form-group form-wide"><label for="companyDescription">Company Description</label><textarea id="companyDescription" name="companyDescription" required></textarea></div>
-                            <div class="form-group form-wide"><label for="buildWithSmaj">What do you want to build with SMAJ?</label><textarea id="buildWithSmaj" name="buildWithSmaj" required></textarea></div>
-                            <div class="form-group form-wide"><label for="companyProfile">Upload Company Profile</label><input id="companyProfile" name="companyProfile" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx"></div>
+                            <div class="form-group form-wide"><label for="partnershipGoal">Partnership Goal</label><textarea id="partnershipGoal" name="partnership_goal" required></textarea></div>
+                            <div class="form-group form-wide"><label for="companyDescription">Company Description</label><textarea id="companyDescription" name="company_description" required></textarea></div>
+                            <div class="form-group form-wide"><label for="message">What do you want to build with SMAJ?</label><textarea id="message" name="message" required></textarea></div>
+                            <div class="form-group form-wide"><label for="company_profile">Upload Company Profile</label><input id="company_profile" name="company_profile" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx"></div>
                         </div>
 
                         <p class="form-note">Firebase is required for secure cloud database and file storage. Until configured, this form saves a local demo record in your browser.</p>

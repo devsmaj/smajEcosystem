@@ -78,13 +78,15 @@ async function handleApplicationSubmit(form) {
     const applicationId = createApplicationId(prefix);
     const editToken = createToken();
     const submittedAt = new Date().toISOString();
+    const editLink = createEditLink(applicationId, editToken);
     const record = {
-        applicationId,
-        editToken,
-        applicationType,
+        application_id: applicationId,
+        edit_token: editToken,
+        application_type: applicationType,
+        edit_link: editLink,
         status: 'received',
-        submittedAt,
-        updatedAt: submittedAt,
+        submitted_at: submittedAt,
+        updated_at: submittedAt,
         data: payload,
         files: []
     };
@@ -197,17 +199,8 @@ async function sendEmailNotifications(record) {
         return;
     }
 
-    const editLink = `${window.location.origin}${window.location.pathname.replace(/[^/]+$/, '')}edit-application.html?id=${encodeURIComponent(record.applicationId)}&token=${encodeURIComponent(record.editToken)}`;
-    const applicantEmail = record.data.email;
-    const baseParams = {
-        application_id: record.applicationId,
-        application_type: record.applicationType,
-        applicant_name: record.data.fullName || record.data.representativeName || record.data.companyName || 'Applicant',
-        applicant_email: applicantEmail || '',
-        edit_link: editLink,
-        submitted_at: record.submittedAt,
-        admin_email: emailJsConfig.adminEmail
-    };
+    const baseParams = createEmailTemplateParams(record);
+    const applicantEmail = baseParams.applicant_email;
 
     const emailJobs = [];
 
@@ -216,10 +209,7 @@ async function sendEmailNotifications(record) {
     }
 
     if (emailJsConfig.userTemplateId && applicantEmail) {
-        emailJobs.push(sendEmailJs(emailJsConfig.userTemplateId, {
-            ...baseParams,
-            to_email: applicantEmail
-        }));
+        emailJobs.push(sendEmailJs(emailJsConfig.userTemplateId, baseParams));
     }
 
     await Promise.all(emailJobs);
@@ -246,7 +236,7 @@ async function sendEmailJs(templateId, templateParams) {
 
 function saveDemoApplication(record) {
     const existing = JSON.parse(localStorage.getItem('smajApplications') || '{}');
-    existing[record.applicationId] = record;
+    existing[record.application_id] = record;
     localStorage.setItem('smajApplications', JSON.stringify(existing));
 }
 
@@ -268,12 +258,57 @@ function createToken() {
     return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
+function createEditLink(applicationId, editToken) {
+    const basePath = window.location.origin
+        ? `${window.location.origin}${window.location.pathname.replace(/[^/]+$/, '')}`
+        : '';
+
+    return `${basePath}edit-application.html?id=${encodeURIComponent(applicationId)}&token=${encodeURIComponent(editToken)}`;
+}
+
+function createEmailTemplateParams(record) {
+    const data = record.data || {};
+
+    return {
+        application_id: record.application_id || '',
+        application_type: record.application_type || '',
+        applicant_name: data.applicant_name || '',
+        applicant_email: data.applicant_email || '',
+        phone: data.phone || '',
+        country: data.country || '',
+        linkedin: data.linkedin || '',
+        github: data.github || '',
+        portfolio: data.portfolio || '',
+        project_name: data.project_name || '',
+        project_website: data.project_website || '',
+        stage: data.stage || '',
+        message: buildEmailMessage(data),
+        edit_link: record.edit_link || '',
+        submitted_at: record.submitted_at || ''
+    };
+}
+
+function buildEmailMessage(data) {
+    const parts = [];
+
+    if (data.message) parts.push(data.message);
+    if (data.project_description) parts.push(`Project description: ${data.project_description}`);
+    if (data.problem_solved) parts.push(`Problem solved: ${data.problem_solved}`);
+    if (data.skills) parts.push(`Skills: ${data.skills}`);
+    if (data.projects_built) parts.push(`Projects built: ${data.projects_built}`);
+    if (data.availability) parts.push(`Availability: ${data.availability}`);
+    if (data.partnership_goal) parts.push(`Partnership goal: ${data.partnership_goal}`);
+    if (data.company_description) parts.push(`Company description: ${data.company_description}`);
+    if (data.team_size) parts.push(`Team size: ${data.team_size}`);
+
+    return parts.join('\n\n');
+}
+
 function showApplicationSuccess(record) {
     const result = document.querySelector('[data-application-result]');
 
     if (!result) return;
 
-    const editLink = `edit-application.html?id=${encodeURIComponent(record.applicationId)}&token=${encodeURIComponent(record.editToken)}`;
     const storageNote = appState.firebaseReady
         ? 'Your application has been saved to Firebase.'
         : 'Firebase is not configured yet, so this browser saved a local demo copy.';
@@ -285,11 +320,11 @@ function showApplicationSuccess(record) {
         <div class="application-result-grid">
             <div>
                 <span>Application ID</span>
-                <strong>${record.applicationId}</strong>
+                <strong>${record.application_id}</strong>
             </div>
             <div>
                 <span>Edit Link</span>
-                <a href="${editLink}">${editLink}</a>
+                <a href="${record.edit_link}">${record.edit_link}</a>
             </div>
         </div>
     `;
@@ -313,7 +348,7 @@ function initEditApplication() {
     const applications = JSON.parse(localStorage.getItem('smajApplications') || '{}');
     const record = applications[applicationId];
 
-    if (!record || record.editToken !== token) {
+    if (!record || record.edit_token !== token) {
         editPanel.innerHTML = '<p class="form-note">Application not found locally. If Firebase is configured, connect the edit workflow to Firestore rules before enabling public edits.</p>';
         return;
     }
@@ -323,7 +358,7 @@ function initEditApplication() {
     }).join('');
 
     editPanel.innerHTML = `
-        <h2>${record.applicationId}</h2>
+        <h2>${record.application_id}</h2>
         <p class="form-note">Local demo record loaded. Firebase edit/save can be enabled after Firestore security rules are configured.</p>
         <ul class="application-review-list">${fields}</ul>
     `;

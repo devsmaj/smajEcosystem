@@ -84,14 +84,14 @@
                 </aside>
 
                 <div class="application-card">
-                    <form data-application-form="founder" data-application-prefix="FND">
+                    <form data-application-form="Founder Partnership" data-application-prefix="FND">
                         <div class="form-section-title">
                             <h3>Founder Details</h3>
                             <p>Tell us who you are and how to reach you.</p>
                         </div>
                         <div class="form-grid">
-                            <div class="form-group"><label for="fullName">Full Name</label><input id="fullName" name="fullName" type="text" required></div>
-                            <div class="form-group"><label for="email">Email</label><input id="email" name="email" type="email" required></div>
+                            <div class="form-group"><label for="applicant_name">Full Name</label><input id="applicant_name" name="applicant_name" type="text" required></div>
+                            <div class="form-group"><label for="applicant_email">Email</label><input id="applicant_email" name="applicant_email" type="email" required></div>
                             <div class="form-group"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" required></div>
                             <div class="form-group"><label for="country">Country</label><input id="country" name="country" type="text" required></div>
                             <div class="form-group"><label for="linkedin">LinkedIn</label><input id="linkedin" name="linkedin" type="url" placeholder="https://linkedin.com/in/..."></div>
@@ -104,15 +104,15 @@
                             <p>Share the opportunity, traction, and current stage.</p>
                         </div>
                         <div class="form-grid">
-                            <div class="form-group"><label for="projectName">Startup / Project Name</label><input id="projectName" name="projectName" type="text" required></div>
-                            <div class="form-group"><label for="projectWebsite">Project Website</label><input id="projectWebsite" name="projectWebsite" type="url" placeholder="https://..."></div>
-                            <div class="form-group"><label for="currentStage">Current Stage</label><select id="currentStage" name="currentStage" required><option value="">Select stage</option><option>Idea</option><option>Prototype</option><option>MVP</option><option>Launched</option><option>Growing</option></select></div>
-                            <div class="form-group"><label for="teamSize">Team Size</label><input id="teamSize" name="teamSize" type="number" min="1" required></div>
-                            <div class="form-group form-wide"><label for="projectDescription">Project Description</label><textarea id="projectDescription" name="projectDescription" required></textarea></div>
-                            <div class="form-group form-wide"><label for="problemSolved">Problem Solved</label><textarea id="problemSolved" name="problemSolved" required></textarea></div>
-                            <div class="form-group"><label for="pitchDeck">Upload Pitch Deck</label><input id="pitchDeck" name="pitchDeck" type="file" accept=".pdf,.ppt,.pptx"></div>
+                            <div class="form-group"><label for="project_name">Startup / Project Name</label><input id="project_name" name="project_name" type="text" required></div>
+                            <div class="form-group"><label for="project_website">Project Website</label><input id="project_website" name="project_website" type="url" placeholder="https://..."></div>
+                            <div class="form-group"><label for="stage">Current Stage</label><select id="stage" name="stage" required><option value="">Select stage</option><option>Idea</option><option>Prototype</option><option>MVP</option><option>Launched</option><option>Growing</option></select></div>
+                            <div class="form-group"><label for="team_size">Team Size</label><input id="team_size" name="team_size" type="number" min="1" required></div>
+                            <div class="form-group form-wide"><label for="projectDescription">Project Description</label><textarea id="projectDescription" name="project_description" required></textarea></div>
+                            <div class="form-group form-wide"><label for="problemSolved">Problem Solved</label><textarea id="problemSolved" name="problem_solved" required></textarea></div>
+                            <div class="form-group"><label for="pitch_deck">Upload Pitch Deck</label><input id="pitch_deck" name="pitch_deck" type="file" accept=".pdf,.ppt,.pptx"></div>
                             <div class="form-group"><label for="screenshots">Upload Screenshots</label><input id="screenshots" name="screenshots" type="file" accept="image/*,.pdf" multiple></div>
-                            <div class="form-group form-wide"><label for="whySmaj">Why do you want to build with SMAJ?</label><textarea id="whySmaj" name="whySmaj" required></textarea></div>
+                            <div class="form-group form-wide"><label for="message">Why do you want to build with SMAJ?</label><textarea id="message" name="message" required></textarea></div>
                         </div>
 
                         <p class="form-note">Firebase is required for secure cloud database and file storage. Until configured, this form saves a local demo record in your browser.</p>

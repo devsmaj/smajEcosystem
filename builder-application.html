@@ -75,15 +75,16 @@
                 </aside>
 
                 <div class="application-card">
-                    <form data-application-form="builder" data-application-prefix="BLD">
+                    <form data-application-form="Technology Builder" data-application-prefix="BLD">
+                        <input type="hidden" name="project_website" value="">
                         <div class="form-section-title"><h3>Profile</h3><p>Tell us who you are and what you build.</p></div>
                         <div class="form-grid">
-                            <div class="form-group"><label for="fullName">Full Name</label><input id="fullName" name="fullName" type="text" required></div>
-                            <div class="form-group"><label for="email">Email</label><input id="email" name="email" type="email" required></div>
+                            <div class="form-group"><label for="applicant_name">Full Name</label><input id="applicant_name" name="applicant_name" type="text" required></div>
+                            <div class="form-group"><label for="applicant_email">Email</label><input id="applicant_email" name="applicant_email" type="email" required></div>
                             <div class="form-group"><label for="phone">Phone</label><input id="phone" name="phone" type="tel" required></div>
                             <div class="form-group"><label for="country">Country</label><input id="country" name="country" type="text" required></div>
-                            <div class="form-group"><label for="role">Role</label><input id="role" name="role" type="text" placeholder="Frontend developer, AI engineer, designer..." required></div>
-                            <div class="form-group"><label for="experienceLevel">Experience Level</label><select id="experienceLevel" name="experienceLevel" required><option value="">Select level</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Senior</option></select></div>
+                            <div class="form-group"><label for="project_name">Role</label><input id="project_name" name="project_name" type="text" placeholder="Frontend developer, AI engineer, designer..." required></div>
+                            <div class="form-group"><label for="stage">Experience Level</label><select id="stage" name="stage" required><option value="">Select level</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Senior</option></select></div>
                             <div class="form-group"><label for="github">GitHub</label><input id="github" name="github" type="url" placeholder="https://github.com/..."></div>
                             <div class="form-group"><label for="linkedin">LinkedIn</label><input id="linkedin" name="linkedin" type="url" placeholder="https://linkedin.com/in/..."></div>
                             <div class="form-group form-wide"><label for="portfolio">Portfolio</label><input id="portfolio" name="portfolio" type="url" placeholder="https://..."></div>
@@ -92,10 +93,10 @@
                         <div class="form-section-title"><h3>Work and Availability</h3><p>Show your strengths and how you can collaborate.</p></div>
                         <div class="form-grid">
                             <div class="form-group form-wide"><label for="skills">Skills</label><textarea id="skills" name="skills" placeholder="JavaScript, Python, AI, UI design, product management..." required></textarea></div>
-                            <div class="form-group form-wide"><label for="projectsBuilt">Projects Built</label><textarea id="projectsBuilt" name="projectsBuilt" required></textarea></div>
+                            <div class="form-group form-wide"><label for="projectsBuilt">Projects Built</label><textarea id="projectsBuilt" name="projects_built" required></textarea></div>
                             <div class="form-group"><label for="availability">Availability</label><select id="availability" name="availability" required><option value="">Select availability</option><option>Part-time</option><option>Full-time</option><option>Project-based</option><option>Internship / learning path</option></select></div>
                             <div class="form-group"><label for="cv">Upload CV</label><input id="cv" name="cv" type="file" accept=".pdf,.doc,.docx"></div>
-                            <div class="form-group form-wide"><label for="whySmaj">Why join SMAJ?</label><textarea id="whySmaj" name="whySmaj" required></textarea></div>
+                            <div class="form-group form-wide"><label for="message">Why join SMAJ?</label><textarea id="message" name="message" required></textarea></div>
                         </div>
 
                         <p class="form-note">Firebase is required for secure cloud database and file storage. Until configured, this form saves a local demo record in your browser.</p>
