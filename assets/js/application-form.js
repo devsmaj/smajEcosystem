@@ -9,10 +9,10 @@ const firebaseConfig = {
 };
 
 const emailJsConfig = {
-    publicKey: "",
-    serviceId: "",
-    adminTemplateId: "",
-    userTemplateId: "",
+    publicKey: "8P_4KsqS5t0soM0gX",
+    serviceId: "service_jsd5hom",
+    adminTemplateId: "template_onw8b66",
+    userTemplateId: "template_5h069ek",
     adminEmail: "officialsmaj@gmail.com"
 };
 
