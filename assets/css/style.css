@@ -112,13 +112,6 @@ section {
     width: 50px;
 }
 
-.logo-text {
-    color: var(--secondary-color);
-    font-size: 21px;
-    font-weight: 800;
-    letter-spacing: 0;
-}
-
 .nav-desktop {
     align-items: center;
     display: flex;
@@ -1034,10 +1027,11 @@ section {
 
 .scroll-top {
     align-items: center;
-    background: var(--primary-color);
+    background: rgba(16, 24, 39, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.34);
     border-radius: 50%;
     bottom: 24px;
-    box-shadow: 0 15px 30px rgba(225, 29, 46, 0.26);
+    box-shadow: 0 15px 30px rgba(16, 24, 39, 0.18);
     color: var(--white);
     cursor: pointer;
     display: flex;
@@ -1047,10 +1041,14 @@ section {
     pointer-events: none;
     position: fixed;
     right: 24px;
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
     transform: translateY(10px);
     width: 48px;
     z-index: 900;
+}
+
+.scroll-top:hover {
+    background: rgba(16, 24, 39, 0.9);
 }
 
 .scroll-top.visible {
