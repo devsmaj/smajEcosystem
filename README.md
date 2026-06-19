@@ -1,169 +1,89 @@
-# SMAJ Ecosystem 🚀
+# SMAJ Ecosystem
 
-### Building Future Technology Companies
+## Building Future Technology Companies
 
-SMAJ Ecosystem is a startup technology company focused on creating, building, partnering, and scaling the next generation of technology companies.
+SMAJ Ecosystem is a startup technology company and venture-building platform focused on creating, building, partnering, and scaling future technology companies.
 
-We transform ideas into products, products into ventures, and ventures into companies.
+The website presents SMAJ as a parent ecosystem for products, labs, ventures, strategic partners, and future companies. Its positioning is inspired by venture builders and startup studios: clear company vision, portfolio-style venture pages, partnership paths, insights, and direct collaboration channels.
 
-SMAJ is designed as a parent ecosystem where innovation, founders, builders, and businesses can collaborate to create impactful technology solutions.
+## Core Message
 
----
+SMAJ transforms ideas into products, products into ventures, and ventures into companies.
 
-## 🌍 About SMAJ Ecosystem
+The ecosystem is built around four operating pillars:
 
-SMAJ Ecosystem is not a single product.
+- **SMAJ Labs** - research, experiments, emerging technology, and new product concepts.
+- **SMAJ Ventures** - company creation, venture planning, launches, and growth.
+- **SMAJ Partners** - founder, builder, business, and strategic partnerships.
+- **SMAJ Products** - digital platforms, AI tools, software products, and ecosystem-owned projects.
 
-It is a technology ecosystem built to create and grow multiple companies under one vision.
+## Website Pages
 
-Our ecosystem focuses on:
+- **Home** - hero, ecosystem overview, venture-builder positioning, featured ventures, and insights.
+- **About** - mission, values, structure, and leadership.
+- **Ventures** - portfolio-style grid for SMAJ Ecosystem, Labs, Ventures, Partners, products, and future companies.
+- **Partnerships** - founder, technology, and strategic partnership paths.
+- **Insights** - articles and updates about startup building, AI, innovation, and SMAJ's journey.
+- **Contact** - contact details, social links, map, and partnership form.
+- **Legal** - privacy policy, terms of service, cookie policy, and disclaimer.
+- **Success** - confirmation page for received messages.
 
-- Creating new technology ventures
-- Building digital platforms
-- Developing innovative products
-- Supporting founders and builders
-- Collaborating with startups and organizations
-- Scaling solutions through technology
-
-The goal is simple:
-
-**Build. Partner. Innovate. Scale.**
-
----
-
-# 🚀 Vision
-
-To become a global technology ecosystem that builds and supports companies shaping the future.
-
----
-
-# 🎯 Mission
-
-Our mission is to turn ambitious ideas into successful technology companies through:
-
-- Innovation
-- Artificial Intelligence
-- Software Development
-- Research & Development
-- Strategic Partnerships
-- Entrepreneurship
-
----
-
-# SMAJ Ecosystem Structure
-
-## 🧪 SMAJ Labs
-
-Where future ideas begin.
-
-SMAJ Labs focuses on:
-
-- Research
-- Experiments
-- New technologies
-- Future concepts
-- Product innovation
-
-Ideas are tested, improved, and prepared to become real solutions.
-
----
-
-## 🚀 SMAJ Ventures
-
-Where ideas become companies.
-
-SMAJ Ventures creates and develops startups from concept to launch.
-
-Focus:
-
-- Build companies
-- Launch products
-- Support growth
-- Create long-term ventures
-
----
-
-## 🤝 SMAJ Partners
-
-Collaboration is part of our foundation.
-
-SMAJ Partners connects with:
-
-- Founders
-- Developers
-- Startups
-- Businesses
-- Organizations
-
-Together, we create and scale technology solutions.
-
----
-
-## 💡 SMAJ Products
-
-Products created inside SMAJ Ecosystem.
-
-Current and future platforms include:
-
-- AI solutions
-- Digital platforms
-- Software products
-- Innovative technologies
-
-Every product is created to solve problems and create value.
-
----
-
-# 🌐 Website Overview
-
-Official SMAJ Ecosystem website.
-
-A modern corporate website designed to present:
-
-- Company vision
-- Ecosystem structure
-- Ventures
-- Partnerships
-- Insights
-- Collaboration opportunities
-
----
-
-# 📄 Pages
-
-### Home
-SMAJ introduction, vision, and ecosystem overview.
-
-### About
-Company mission, values, and story.
-
-### Ventures
-SMAJ companies, products, labs, and future ventures.
-
-### Partnerships
-Opportunities for founders, builders, companies, and organizations.
-
-### Insights
-Updates, ideas, innovation, and company news.
-
-### Contact
-Connect and collaborate with SMAJ.
-
-### Legal
-Policies and company information.
-
----
-
-# 🛠 Technology Stack
-
-Built using:
+## Technology Stack
 
 - HTML5
 - CSS3
 - JavaScript
-- Responsive Design
-- Modern UI/UX
+- Responsive design
+- Boxicons
+- Google Fonts
+- Static website architecture
 
----
+## Project Structure
 
-# 📁 Project Structure
+```text
+smajEcosystem/
+|-- index.html
+|-- about.html
+|-- ventures.html
+|-- partnerships.html
+|-- insights.html
+|-- contact.html
+|-- legal.html
+|-- success.html
+|-- README.md
+|-- assets/
+    |-- css/
+    |   |-- style.css
+    |-- js/
+    |   |-- main.js
+    |   |-- navigation.js
+    |   |-- projects-filter.js
+    |-- images/
+        |-- logo.jpg
+        |-- logo.svg
+        |-- ceo.jpg
+        |-- coo.jpg
+        |-- team-rohid.jpg
+        |-- smajstore.png
+        |-- smajpihub.mp4
+```
+
+## Running Locally
+
+This is a static website. Open `index.html` directly in a browser, or serve the folder with any local static server.
+
+Example:
+
+```bash
+python -m http.server 8000
+```
+
+Then visit:
+
+```text
+http://localhost:8000
+```
+
+## Current Status
+
+The site is fully built as a responsive static SMAJ Ecosystem website with completed pages, shared navigation, mobile menu behavior, scroll animations, venture filtering, insight filtering, contact form UI, and legal content.

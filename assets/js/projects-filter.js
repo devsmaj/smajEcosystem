@@ -4,9 +4,9 @@
 
 document.addEventListener('DOMContentLoaded', function () {
     const filterBtns = document.querySelectorAll('.filter-btn');
-    const projectCards = document.querySelectorAll('.project-card');
+    const cards = document.querySelectorAll('.project-card, .insight-card');
 
-    if (!filterBtns.length || !projectCards.length) return;
+    if (!filterBtns.length || !cards.length) return;
 
     const ventureCategories = {
         'All Ventures': 'all',
@@ -14,7 +14,11 @@ document.addEventListener('DOMContentLoaded', function () {
         'SMAJ Labs': ['Labs', 'Innovation'],
         'SMAJ Products': ['AI Product', 'Identity Product', 'Platform', 'Product'],
         'SMAJ Partners': ['Partners', 'Partner Venture'],
-        'Future Companies': ['Future Companies', 'Future Venture', 'Venture']
+        'Future Companies': ['Future Companies', 'Future Venture', 'Venture'],
+        'SMAJ Updates': ['SMAJ Updates'],
+        'AI': ['AI'],
+        'Venture Building': ['Venture Building'],
+        'Innovation': ['Innovation']
     };
 
     filterBtns.forEach(function (btn) {
@@ -28,16 +32,16 @@ document.addEventListener('DOMContentLoaded', function () {
             const filterValue = this.textContent.trim();
             const categories = ventureCategories[filterValue] || 'all';
 
-            projectCards.forEach(function (card) {
-                const categorySpan = card.querySelector('.project-category');
-                const projectCategory = categorySpan ? categorySpan.textContent.trim() : '';
+            cards.forEach(function (card) {
+                const categorySpan = card.querySelector('.project-category, .insight-category');
+                const cardCategory = categorySpan ? categorySpan.textContent.trim() : '';
 
                 let shouldShow = false;
 
                 if (categories === 'all') {
                     shouldShow = true;
                 } else if (Array.isArray(categories)) {
-                    shouldShow = categories.includes(projectCategory);
+                    shouldShow = categories.includes(cardCategory);
                 }
 
                 if (shouldShow) {
