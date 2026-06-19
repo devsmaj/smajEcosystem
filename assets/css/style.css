@@ -676,6 +676,20 @@ section {
     transform: scale(1.04);
 }
 
+.project-logo-image {
+    align-items: center;
+    background: radial-gradient(circle at center, #ffffff 0%, #f1f5f9 58%, #e5e7eb 100%);
+    display: flex;
+    justify-content: center;
+}
+
+.project-logo-image img {
+    aspect-ratio: 16 / 10;
+    height: 100%;
+    object-fit: contain;
+    padding: 44px;
+}
+
 .project-overlay {
     bottom: 16px;
     left: 16px;
@@ -1225,11 +1239,10 @@ section {
 
 .scroll-top {
     align-items: center;
-    background: rgba(16, 24, 39, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.34);
-    border-radius: 50%;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
     bottom: 24px;
-    box-shadow: 0 15px 30px rgba(16, 24, 39, 0.18);
     color: var(--white);
     cursor: pointer;
     display: flex;
@@ -1239,14 +1252,11 @@ section {
     pointer-events: none;
     position: fixed;
     right: 24px;
-    transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+    filter: drop-shadow(0 3px 8px rgba(16, 24, 39, 0.65));
+    transition: opacity 0.2s ease, transform 0.2s ease;
     transform: translateY(10px);
     width: 48px;
     z-index: 900;
-}
-
-.scroll-top:hover {
-    background: rgba(16, 24, 39, 0.9);
 }
 
 .scroll-top.visible {
@@ -1255,9 +1265,13 @@ section {
     transform: translateY(0);
 }
 
+.scroll-top.visible:hover {
+    transform: translateY(-3px);
+}
+
 .scroll-top svg {
-    height: 22px;
-    width: 22px;
+    height: 32px;
+    width: 32px;
 }
 
 .preloader {
