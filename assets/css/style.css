@@ -429,6 +429,11 @@ section {
     grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.team-grid-founder {
+    grid-template-columns: minmax(280px, 420px);
+    justify-content: center;
+}
+
 /* Cards */
 
 .card,
@@ -1155,6 +1160,34 @@ section {
     width: 36px;
 }
 
+.future-team-section {
+    padding-top: 0;
+}
+
+.future-team-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(16, 24, 39, 0.06);
+    margin: 0 auto;
+    max-width: 820px;
+    padding: 36px;
+    text-align: center;
+}
+
+.future-team-card h2 {
+    font-size: clamp(30px, 4vw, 44px);
+    line-height: 1.1;
+    margin-bottom: 14px;
+}
+
+.future-team-card p {
+    color: var(--text-secondary);
+    font-size: 17px;
+    margin: 0 auto 26px;
+    max-width: 660px;
+}
+
 /* CTA and footer */
 
 .cta-section {
@@ -1239,9 +1272,9 @@ section {
 
 .scroll-top {
     align-items: center;
-    background: transparent;
-    border: 0;
-    border-radius: 0;
+    background: rgba(16, 24, 39, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.26);
+    border-radius: 50%;
     bottom: 24px;
     color: var(--white);
     cursor: pointer;
@@ -1252,7 +1285,7 @@ section {
     pointer-events: none;
     position: fixed;
     right: 24px;
-    filter: drop-shadow(0 3px 8px rgba(16, 24, 39, 0.65));
+    box-shadow: 0 14px 28px rgba(16, 24, 39, 0.2);
     transition: opacity 0.2s ease, transform 0.2s ease;
     transform: translateY(10px);
     width: 48px;
@@ -1266,6 +1299,7 @@ section {
 }
 
 .scroll-top.visible:hover {
+    background: rgba(16, 24, 39, 0.92);
     transform: translateY(-3px);
 }
 
