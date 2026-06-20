@@ -1,11 +1,8 @@
-const firebaseConfig = {
-    apiKey: "AIzaSyDcgvUNr8xwpIh8oLjLDJ6UiVtGbbhANpM",
-    authDomain: "smaj-ecosystem.firebaseapp.com",
-    projectId: "smaj-ecosystem",
-    storageBucket: "smaj-ecosystem.firebasestorage.app",
-    messagingSenderId: "196720259518",
-    appId: "1:196720259518:web:1dc1aa53d59c4b8987c9ef",
-    measurementId: "G-22SBN58WT4"
+const supabaseConfig = {
+    url: "https://fqfcxitcnseyrunglkqy.supabase.co",
+    anonKey: "sb_publishable_SA3t6uGPtSDPofYVa1XGVQ_qOaVZn7Y",
+    bucket: "applications",
+    table: "applications"
 };
 
 const emailJsConfig = {
@@ -17,10 +14,7 @@ const emailJsConfig = {
 };
 
 const appState = {
-    firebaseReady: false,
-    db: null,
-    storage: null,
-    firebaseModules: null
+    supabaseReady: Boolean(supabaseConfig.url && supabaseConfig.anonKey)
 };
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -28,35 +22,6 @@ document.addEventListener('DOMContentLoaded', function () {
     initApplicationForms();
     initEditApplication();
 });
-
-async function initFirebase() {
-    if (appState.firebaseReady) return true;
-
-    if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-        return false;
-    }
-
-    try {
-        const appModule = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js');
-        const firestoreModule = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js');
-        const storageModule = await import('https://www.gstatic.com/firebasejs/10.12.5/firebase-storage.js');
-
-        const app = appModule.initializeApp(firebaseConfig);
-
-        appState.db = firestoreModule.getFirestore(app);
-        appState.storage = storageModule.getStorage(app);
-        appState.firebaseModules = {
-            ...firestoreModule,
-            ...storageModule
-        };
-        appState.firebaseReady = true;
-
-        return true;
-    } catch (error) {
-        console.error('Firebase initialization failed:', error);
-        return false;
-    }
-}
 
 function initApplicationForms() {
     const forms = document.querySelectorAll('[data-application-form]');
@@ -102,39 +67,30 @@ async function handleApplicationSubmit(form) {
     setButtonLoading(submitButton, true);
 
     try {
-        const firebaseReady = await withTimeout(initFirebase(), 12000, 'Firebase connection timed out. Please check your internet and Firebase settings.');
-
-        if (firebaseReady) {
-            setStatus(status, files.length ? 'Uploading files...' : 'Saving application...', 'info');
-            record.files = await uploadApplicationFiles(applicationId, files);
-            setFileUploadSuccess(record.files);
-            setStatus(status, 'Saving application...', 'info');
-            await saveApplicationRecord(applicationId, record);
-        } else {
-            record.files = files.map(function (file) {
-                return {
-                    field: file.field,
-                    name: file.file.name,
-                    size: file.file.size,
-                    type: file.file.type,
-                    storagePath: 'Firebase Storage not configured'
-                };
-            });
-            saveDemoApplication(record);
+        if (!appState.supabaseReady) {
+            throw new Error('Supabase is not configured. Add the project URL and anon public key.');
         }
 
-        try {
-            setStatus(status, 'Sending confirmation emails...', 'info');
-            await sendEmailNotifications(record);
-        } catch (emailError) {
-            console.error('Email notification failed:', emailError);
-        }
-        showApplicationSuccess(record);
+        setStatus(status, files.length ? 'Uploading files...' : 'Saving application...', 'info');
+        record.files = await uploadApplicationFiles(applicationId, applicationType, files);
+        setFileUploadSuccess(record.files);
+
+        setStatus(status, 'Saving application...', 'info');
+        await saveApplicationRecord(applicationId, record);
+        saveDemoApplication(record);
+
+        setStatus(status, 'Sending confirmation emails...', 'info');
+        await sendEmailNotifications(record);
+
         form.reset();
         if (window.clearSmajPersistedForm) {
             window.clearSmajPersistedForm(form);
         }
-        setStatus(status, 'Application submitted successfully. Save your application ID and edit link.', 'success');
+
+        const successUrl = new URL('/success/', window.location.origin);
+        successUrl.searchParams.set('id', applicationId);
+        window.location.href = successUrl.toString();
+        return;
     } catch (error) {
         console.error(error);
         setStatus(status, error.message || 'Something went wrong. Please check the form and try again.', 'error');
@@ -159,8 +115,22 @@ function initFileFeedback() {
                 return;
             }
 
+            const validation = validateSelectedFiles(files.map(function (file) {
+                return {
+                    field: input.name,
+                    file
+                };
+            }));
+
+            if (!validation.valid) {
+                input.value = '';
+                feedback.textContent = validation.message;
+                feedback.dataset.status = 'error';
+                return;
+            }
+
             const imageFiles = files.filter(function (file) {
-                return file.type.startsWith('image/');
+                return isAllowedImageFile(file);
             });
 
             if (input.multiple && imageFiles.length > 3) {
@@ -215,9 +185,27 @@ function collectFiles(form) {
 
 function validateSelectedFiles(files) {
     const groupedImages = {};
+    const maxFileSize = 20 * 1024 * 1024;
+    const allowedExtensions = ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'webp'];
 
     for (const item of files) {
-        if (item.file.type.startsWith('image/')) {
+        const extension = getFileExtension(item.file.name);
+
+        if (item.file.size > maxFileSize) {
+            return {
+                valid: false,
+                message: 'File is too large. Maximum allowed size is 20MB.'
+            };
+        }
+
+        if (!allowedExtensions.includes(extension)) {
+            return {
+                valid: false,
+                message: 'File type not allowed. Upload PDF, DOC, DOCX, PNG, JPG, JPEG, or WEBP files only.'
+            };
+        }
+
+        if (isAllowedImageFile(item.file)) {
             groupedImages[item.field] = (groupedImages[item.field] || 0) + 1;
         }
     }
@@ -236,31 +224,44 @@ function validateSelectedFiles(files) {
     return { valid: true, message: '' };
 }
 
-async function uploadApplicationFiles(applicationId, files) {
+async function uploadApplicationFiles(applicationId, applicationType, files) {
     const uploaded = [];
-    const modules = appState.firebaseModules;
+    const folder = getApplicationFolder(applicationType);
 
     for (const item of files) {
-        const storagePath = `applications/${applicationId}/${item.field}/${Date.now()}-${item.file.name}`;
-        const fileRef = modules.ref(appState.storage, storagePath);
+        const storagePath = `applications/${folder}/${applicationId}/${Date.now()}-${sanitizeFileName(item.file.name)}`;
+        const uploadUrl = `${supabaseConfig.url}/storage/v1/object/${encodeURIComponent(supabaseConfig.bucket)}/${storagePath}`;
 
-        await withTimeout(
-            modules.uploadBytes(fileRef, item.file),
+        const response = await withTimeout(
+            fetch(uploadUrl, {
+                method: 'POST',
+                headers: {
+                    apikey: supabaseConfig.anonKey,
+                    Authorization: `Bearer ${supabaseConfig.anonKey}`,
+                    'Content-Type': item.file.type || 'application/octet-stream',
+                    'x-upsert': 'false'
+                },
+                body: item.file
+            }),
             30000,
-            `Upload timed out for ${item.file.name}. Try a smaller file or check Firebase Storage rules.`
+            `Upload timed out for ${item.file.name}. Try a smaller file or check Supabase Storage rules.`
         );
+
+        if (!response.ok) {
+            const errorText = await response.text().catch(function () {
+                return '';
+            });
+            throw new Error(errorText || `Upload failed for ${item.file.name}.`);
+        }
 
         uploaded.push({
             field: item.field,
             name: item.file.name,
             size: item.file.size,
             type: item.file.type,
+            bucket: supabaseConfig.bucket,
             storagePath,
-            downloadUrl: await withTimeout(
-                modules.getDownloadURL(fileRef),
-                15000,
-                `Could not get upload link for ${item.file.name}.`
-            )
+            downloadUrl: getSupabasePublicUrl(storagePath)
         });
     }
 
@@ -268,14 +269,43 @@ async function uploadApplicationFiles(applicationId, files) {
 }
 
 async function saveApplicationRecord(applicationId, record) {
-    const modules = appState.firebaseModules;
-    const docRef = modules.doc(appState.db, 'applications', applicationId);
+    const row = {
+        application_id: applicationId,
+        application_type: record.application_type,
+        applicant_name: record.data.applicant_name || '',
+        applicant_email: record.data.applicant_email || '',
+        phone: record.data.phone || '',
+        country: record.data.country || '',
+        edit_token: record.edit_token,
+        edit_link: record.edit_link,
+        status: record.status,
+        submitted_at: record.submitted_at,
+        updated_at: record.updated_at,
+        data: record.data,
+        files: record.files
+    };
 
-    await withTimeout(
-        modules.setDoc(docRef, record),
+    const response = await withTimeout(
+        fetch(`${supabaseConfig.url}/rest/v1/${supabaseConfig.table}`, {
+            method: 'POST',
+            headers: {
+                apikey: supabaseConfig.anonKey,
+                Authorization: `Bearer ${supabaseConfig.anonKey}`,
+                'Content-Type': 'application/json',
+                Prefer: 'return=minimal'
+            },
+            body: JSON.stringify(row)
+        }),
         20000,
-        'Saving application timed out. Please check Firestore rules and try again.'
+        'Saving application timed out. Please check Supabase table policies and try again.'
     );
+
+    if (!response.ok) {
+        const errorText = await response.text().catch(function () {
+            return '';
+        });
+        throw new Error(errorText || 'Could not save application in Supabase database.');
+    }
 }
 
 async function sendEmailNotifications(record) {
@@ -342,8 +372,57 @@ function setFileUploadSuccess(files) {
     });
 }
 
+function setFileUploadError(files) {
+    const fields = new Set(files.map(function (file) {
+        return file.field;
+    }));
+
+    fields.forEach(function (field) {
+        const feedback = document.querySelector(`[data-file-feedback="${field}"]`);
+
+        if (!feedback) return;
+
+        feedback.textContent = 'Upload failed. Please try again.';
+        feedback.dataset.status = 'error';
+    });
+}
+
 function findFileFeedback(input) {
     return document.querySelector(`[data-file-feedback="${input.name}"]`);
+}
+
+function getApplicationFolder(applicationType) {
+    const folders = {
+        'Founder Partnership': 'founders',
+        'Technology Builder': 'builders',
+        'Strategic Partnership': 'partners'
+    };
+
+    return folders[applicationType] || 'partners';
+}
+
+function getFileExtension(fileName) {
+    return String(fileName || '').split('.').pop().toLowerCase();
+}
+
+function isAllowedImageFile(file) {
+    return ['png', 'jpg', 'jpeg', 'webp'].includes(getFileExtension(file.name));
+}
+
+function sanitizeFileName(fileName) {
+    const extension = getFileExtension(fileName);
+    const baseName = String(fileName || 'upload')
+        .replace(/\.[^/.]+$/, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 80) || 'upload';
+
+    return extension ? `${baseName}.${extension}` : baseName;
+}
+
+function getSupabasePublicUrl(storagePath) {
+    return `${supabaseConfig.url}/storage/v1/object/public/${encodeURIComponent(supabaseConfig.bucket)}/${storagePath}`;
 }
 
 function withTimeout(promise, timeoutMs, message) {
@@ -432,9 +511,9 @@ function showApplicationSuccess(record) {
 
     if (!result) return;
 
-    const storageNote = appState.firebaseReady
+    const storageNote = appState.supabaseReady
         ? 'Your application has been securely submitted to SMAJ Ecosystem.'
-        : 'Your application was saved locally because the secure submission service could not be reached. Please try again if you do not receive confirmation.';
+        : 'Your application could not reach the secure submission service. Please try again.';
 
     result.hidden = false;
     result.innerHTML = `
@@ -472,7 +551,7 @@ function initEditApplication() {
     const record = applications[applicationId];
 
     if (!record || record.edit_token !== token) {
-        editPanel.innerHTML = '<p class="form-note">Application not found locally. If Firebase is configured, connect the edit workflow to Firestore rules before enabling public edits.</p>';
+        editPanel.innerHTML = '<p class="form-note">Application not found locally. Connect the edit workflow to Supabase policies before enabling public edits.</p>';
         return;
     }
 
