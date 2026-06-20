@@ -1,7 +1,7 @@
 const supabaseConfig = {
     url: "https://fqfcxitcnseyrunglkqy.supabase.co",
     anonKey: "sb_publishable_SA3t6uGPtSDPofYVa1XGVQ_qOaVZn7Y",
-    bucket: "applications",
+    bucket: "applicatoins",
     table: "applications"
 };
 
@@ -248,10 +248,8 @@ async function uploadApplicationFiles(applicationId, applicationType, files) {
         );
 
         if (!response.ok) {
-            const errorText = await response.text().catch(function () {
-                return '';
-            });
-            throw new Error(errorText || `Upload failed for ${item.file.name}.`);
+            const uploadError = await parseSupabaseError(response);
+            throw new Error(uploadError || `Upload failed for ${item.file.name}.`);
         }
 
         uploaded.push({
@@ -301,10 +299,8 @@ async function saveApplicationRecord(applicationId, record) {
     );
 
     if (!response.ok) {
-        const errorText = await response.text().catch(function () {
-            return '';
-        });
-        throw new Error(errorText || 'Could not save application in Supabase database.');
+        const saveError = await parseSupabaseError(response);
+        throw new Error(saveError || 'Could not save application in Supabase database.');
     }
 }
 
@@ -423,6 +419,26 @@ function sanitizeFileName(fileName) {
 
 function getSupabasePublicUrl(storagePath) {
     return `${supabaseConfig.url}/storage/v1/object/public/${encodeURIComponent(supabaseConfig.bucket)}/${storagePath}`;
+}
+
+async function parseSupabaseError(response) {
+    const text = await response.text().catch(function () {
+        return '';
+    });
+
+    if (!text) return '';
+
+    try {
+        const error = JSON.parse(text);
+
+        if (error.message === 'Bucket not found') {
+            return `Supabase bucket "${supabaseConfig.bucket}" was not found. Create this Storage bucket in Supabase first.`;
+        }
+
+        return error.message || error.error || text;
+    } catch (parseError) {
+        return text;
+    }
 }
 
 function withTimeout(promise, timeoutMs, message) {
