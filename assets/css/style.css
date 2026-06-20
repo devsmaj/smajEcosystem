@@ -1284,6 +1284,14 @@ section {
     padding-top: 24px;
 }
 
+.legal-footer {
+    padding: 34px 0;
+}
+
+.legal-footer .footer-bottom {
+    margin-top: 0;
+}
+
 .footer-legal {
     display: flex;
     flex-wrap: wrap;
