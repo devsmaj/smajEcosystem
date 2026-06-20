@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initProjectCarousel();
     initCounters();
     initScrollTop();
+    initNewsletterForms();
     initFormPersistence();
     setActiveMenuItem();
 });
@@ -215,6 +216,82 @@ function validateForm(formId) {
     });
 
     return isValid;
+}
+
+/**
+ * Newsletter Forms
+ */
+function initNewsletterForms() {
+    const forms = document.querySelectorAll('[data-newsletter-form]');
+
+    forms.forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            submitNewsletterForm(form);
+        });
+    });
+}
+
+async function submitNewsletterForm(form) {
+    const emailField = form.querySelector('input[type="email"]');
+    const submitButton = form.querySelector('[type="submit"]');
+    const status = form.querySelector('[data-newsletter-status]');
+    const endpoint = form.getAttribute('action');
+
+    if (!emailField || !isValidEmail(emailField.value.trim())) {
+        setNewsletterStatus(status, 'Please enter a valid email address.', 'error');
+        emailField?.focus();
+        return;
+    }
+
+    if (!endpoint) {
+        setNewsletterStatus(status, 'Subscription service is not configured yet.', 'error');
+        return;
+    }
+
+    setNewsletterStatus(status, 'Subscribing...', 'info');
+    setNewsletterButtonLoading(submitButton, true);
+
+    try {
+        const formData = new FormData(form);
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(Object.fromEntries(formData.entries()))
+        });
+
+        if (!response.ok) {
+            throw new Error('Subscription failed.');
+        }
+
+        form.reset();
+        clearSmajPersistedForm(form);
+        setNewsletterStatus(status, 'Subscribed successfully. Thank you for following SMAJ Ecosystem.', 'success');
+    } catch (error) {
+        console.error(error);
+        setNewsletterStatus(status, 'Could not subscribe right now. Please try again in a moment.', 'error');
+    } finally {
+        setNewsletterButtonLoading(submitButton, false);
+    }
+}
+
+function setNewsletterStatus(status, message, type) {
+    if (!status) return;
+    status.textContent = message;
+    status.dataset.status = type;
+}
+
+function setNewsletterButtonLoading(button, isLoading) {
+    if (!button) return;
+
+    if (!button.dataset.defaultText) {
+        button.dataset.defaultText = button.textContent;
+    }
+
+    button.disabled = isLoading;
+    button.textContent = isLoading ? 'Subscribing...' : button.dataset.defaultText;
 }
 
 /**

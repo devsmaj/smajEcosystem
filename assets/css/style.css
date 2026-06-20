@@ -1098,6 +1098,27 @@ section {
     color: var(--text-secondary);
 }
 
+.newsletter-status {
+    flex-basis: 100%;
+    font-size: 14px;
+    font-weight: 900;
+    margin-top: 2px;
+    min-height: 20px;
+    text-align: center;
+}
+
+.newsletter-status[data-status="success"] {
+    color: #bbf7d0;
+}
+
+.newsletter-status[data-status="error"] {
+    color: #fecaca;
+}
+
+.newsletter-status[data-status="info"] {
+    color: rgba(255, 255, 255, 0.78);
+}
+
 .application-result {
     background: #f0fdf4;
     border-color: #bbf7d0;
