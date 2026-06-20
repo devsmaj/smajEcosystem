@@ -259,11 +259,9 @@ function createToken() {
 }
 
 function createEditLink(applicationId, editToken) {
-    const basePath = window.location.origin
-        ? `${window.location.origin}${window.location.pathname.replace(/[^/]+$/, '')}`
-        : '';
+    const origin = window.location.origin || '';
 
-    return `${basePath}edit-application.html?id=${encodeURIComponent(applicationId)}&token=${encodeURIComponent(editToken)}`;
+    return `${origin}/edit-application/?id=${encodeURIComponent(applicationId)}&token=${encodeURIComponent(editToken)}`;
 }
 
 function createEmailTemplateParams(record) {

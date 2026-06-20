@@ -47,17 +47,30 @@ The ecosystem is built around four operating pillars:
 ```text
 smajEcosystem/
 |-- index.html
-|-- about.html
-|-- ventures.html
-|-- partnerships.html
-|-- founder-application.html
-|-- builder-application.html
-|-- partner-application.html
-|-- edit-application.html
-|-- insights.html
-|-- contact.html
-|-- legal.html
-|-- success.html
+|-- sitemap.xml
+|-- .nojekyll
+|-- about/
+|   |-- index.html
+|-- ventures/
+|   |-- index.html
+|-- partnerships/
+|   |-- index.html
+|-- founder-application/
+|   |-- index.html
+|-- builder-application/
+|   |-- index.html
+|-- partner-application/
+|   |-- index.html
+|-- edit-application/
+|   |-- index.html
+|-- insights/
+|   |-- index.html
+|-- contact/
+|   |-- index.html
+|-- legal/
+|   |-- index.html
+|-- success/
+|   |-- index.html
 |-- README.md
 |-- assets/
     |-- css/
@@ -79,7 +92,7 @@ smajEcosystem/
 
 ## Running Locally
 
-This is a static website. Open `index.html` directly in a browser, or serve the folder with any local static server.
+This is a static website using clean folder URLs. Serve the folder with any local static server.
 
 Example:
 
@@ -101,14 +114,14 @@ The site is fully built as a responsive static SMAJ Ecosystem website with compl
 
 The application pages are ready for a GitHub Pages + Firebase setup:
 
-- `founder-application.html` saves Founder Partnership applications.
-- `builder-application.html` saves Technology Builder applications.
-- `partner-application.html` saves Strategic Partner applications.
-- `edit-application.html` opens generated edit links with `id` and `token` query parameters.
+- `/founder-application/` saves Founder Partnership applications.
+- `/builder-application/` saves Technology Builder applications.
+- `/partner-application/` saves Strategic Partner applications.
+- `/edit-application/` opens generated edit links with `id` and `token` query parameters.
 
 The shared script is `assets/js/application-form.js`.
 
-By default, Firebase and EmailJS keys are empty. In that state, forms generate an application ID and save a local demo record in the browser. To make the system production-ready, add a Firebase project config, configure Firestore security rules, configure Firebase Storage rules, and add EmailJS service/template IDs or replace the email hook with Firebase Cloud Functions and an email provider.
+The application script is configured for Firebase and EmailJS. For production, keep Firestore and Firebase Storage security rules strict, and use the EmailJS templates listed below.
 
 EmailJS templates must use these exact variables:
 

@@ -228,25 +228,47 @@ function isValidEmail(email) {
  * Active Menu Item
  */
 function setActiveMenuItem() {
-    let currentPage = window.location.pathname.split('/').pop();
-
-    if (!currentPage || currentPage === '') {
-        currentPage = 'index.html';
-    }
-
-    if (currentPage === 'projects.html') {
-        currentPage = 'ventures.html';
-    }
+    const currentPath = normalizeMenuPath(window.location.pathname);
 
     const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
 
     navLinks.forEach(function (link) {
-        const href = link.getAttribute('href');
+        const href = normalizeMenuPath(link.getAttribute('href'));
 
         link.classList.remove('active');
 
-        if (href === currentPage) {
+        if (href === currentPath) {
             link.classList.add('active');
         }
     });
+}
+
+function normalizeMenuPath(path) {
+    if (!path || path === 'index.html') return '/';
+
+    const legacyMap = {
+        'about.html': '/about/',
+        'ventures.html': '/ventures/',
+        'projects.html': '/ventures/',
+        'partnerships.html': '/partnerships/',
+        'insights.html': '/insights/',
+        'contact.html': '/contact/'
+    };
+
+    if (legacyMap[path]) return legacyMap[path];
+
+    if (/^https?:\/\//.test(path)) {
+        try {
+            path = new URL(path).pathname;
+        } catch (error) {
+            return path;
+        }
+    }
+
+    if (!path.startsWith('/')) path = `/${path}`;
+    if (path.endsWith('/index.html')) path = path.replace(/index\.html$/, '');
+    if (path.endsWith('.html')) path = legacyMap[path.slice(1)] || path;
+    if (!path.endsWith('/')) path = `${path}/`;
+
+    return path;
 }
