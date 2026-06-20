@@ -740,6 +740,26 @@ section {
     margin-bottom: 10px;
 }
 
+.project-title-with-icon {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+}
+
+.project-title-icon {
+    align-items: center;
+    background: #fff1f2;
+    border: 1px solid #ffe4e6;
+    border-radius: 8px;
+    color: var(--primary-color);
+    display: inline-flex;
+    flex: 0 0 36px;
+    font-size: 20px;
+    height: 36px;
+    justify-content: center;
+    width: 36px;
+}
+
 .project-content p,
 .insight-content p {
     flex: 1;
