@@ -131,6 +131,9 @@ async function handleApplicationSubmit(form) {
         }
         showApplicationSuccess(record);
         form.reset();
+        if (window.clearSmajPersistedForm) {
+            window.clearSmajPersistedForm(form);
+        }
         setStatus(status, 'Application submitted successfully. Save your application ID and edit link.', 'success');
     } catch (error) {
         console.error(error);

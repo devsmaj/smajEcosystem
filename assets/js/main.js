@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initProjectCarousel();
     initCounters();
     initScrollTop();
+    initFormPersistence();
     setActiveMenuItem();
 });
 
@@ -215,6 +216,112 @@ function validateForm(formId) {
 
     return isValid;
 }
+
+/**
+ * Form Draft Persistence
+ */
+function initFormPersistence() {
+    const forms = document.querySelectorAll('[data-persist-form]');
+
+    if (!forms.length || !supportsLocalStorage()) return;
+
+    forms.forEach(function (form) {
+        restorePersistedForm(form);
+
+        ['input', 'change'].forEach(function (eventName) {
+            form.addEventListener(eventName, function (event) {
+                if (shouldPersistField(event.target)) {
+                    savePersistedForm(form);
+                }
+            });
+        });
+    });
+}
+
+function savePersistedForm(form) {
+    const storageKey = getPersistedFormKey(form);
+    const data = {};
+    const fields = form.querySelectorAll('input, textarea, select');
+
+    fields.forEach(function (field) {
+        if (!shouldPersistField(field) || !field.name) return;
+
+        if (field.type === 'checkbox') {
+            data[field.name] = field.checked;
+            return;
+        }
+
+        if (field.type === 'radio') {
+            if (field.checked) data[field.name] = field.value;
+            return;
+        }
+
+        data[field.name] = field.value;
+    });
+
+    localStorage.setItem(storageKey, JSON.stringify(data));
+}
+
+function restorePersistedForm(form) {
+    const storageKey = getPersistedFormKey(form);
+    let data = {};
+
+    try {
+        data = JSON.parse(localStorage.getItem(storageKey) || '{}');
+    } catch (error) {
+        localStorage.removeItem(storageKey);
+        return;
+    }
+
+    Object.keys(data).forEach(function (name) {
+        const fields = Array.from(form.elements).filter(function (field) {
+            return field.name === name && shouldPersistField(field);
+        });
+
+        fields.forEach(function (field) {
+            if (field.type === 'checkbox') {
+                field.checked = Boolean(data[name]);
+                return;
+            }
+
+            if (field.type === 'radio') {
+                field.checked = field.value === data[name];
+                return;
+            }
+
+            field.value = data[name];
+        });
+    });
+}
+
+function clearSmajPersistedForm(form) {
+    if (!form || !supportsLocalStorage()) return;
+    localStorage.removeItem(getPersistedFormKey(form));
+}
+
+function getPersistedFormKey(form) {
+    return `smaj:${form.dataset.persistForm || form.id || 'form'}`;
+}
+
+function shouldPersistField(field) {
+    if (!field || !field.matches || !field.matches('input, textarea, select')) return false;
+
+    const blockedTypes = ['file', 'password', 'submit', 'button', 'reset', 'hidden'];
+    return !blockedTypes.includes((field.type || '').toLowerCase());
+}
+
+function supportsLocalStorage() {
+    try {
+        const testKey = 'smaj:storage-test';
+        localStorage.setItem(testKey, '1');
+        localStorage.removeItem(testKey);
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
+window.clearSmajPersistedForm = clearSmajPersistedForm;
 
 /**
  * Email Validation

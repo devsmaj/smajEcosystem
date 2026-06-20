@@ -168,7 +168,7 @@
                 
                 <div class="contact-form">
                     <h3>Send a Partnership Message</h3>
-                    <form id="contactForm" method="POST" action="https://formsubmit.co/officialsmaj@gmail.com">
+                    <form id="contactForm" method="POST" action="https://formsubmit.co/officialsmaj@gmail.com" data-persist-form="contact-form">
                         <div class="form-group">
                             <label for="name">Full Name</label>
                             <input type="text" id="name" name="name" placeholder="Your full name" required>
@@ -363,6 +363,9 @@
             .then(response => {
                 if (response.ok) {
                     form.reset();
+                    if (window.clearSmajPersistedForm) {
+                        window.clearSmajPersistedForm(form);
+                    }
                 } else {
                     console.error('Form submission failed');
                 }
