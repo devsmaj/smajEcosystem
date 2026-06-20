@@ -1119,6 +1119,25 @@ section {
     color: rgba(255, 255, 255, 0.78);
 }
 
+.contact-status {
+    font-size: 14px;
+    font-weight: 900;
+    margin-top: 14px;
+    min-height: 20px;
+}
+
+.contact-status[data-status="success"] {
+    color: #047857;
+}
+
+.contact-status[data-status="error"] {
+    color: #b91c1c;
+}
+
+.contact-status[data-status="info"] {
+    color: var(--text-secondary);
+}
+
 .application-result {
     background: #f0fdf4;
     border-color: #bbf7d0;
