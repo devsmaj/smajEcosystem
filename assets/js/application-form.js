@@ -435,6 +435,10 @@ async function parseSupabaseError(response) {
             return `Supabase bucket "${supabaseConfig.bucket}" was not found. Create this Storage bucket in Supabase first.`;
         }
 
+        if (/row-level security/i.test(error.message || error.error || text)) {
+            return 'Supabase database insert is blocked by Row Level Security. Add an anon insert policy for the applications table.';
+        }
+
         return error.message || error.error || text;
     } catch (parseError) {
         return text;
