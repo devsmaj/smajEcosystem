@@ -310,7 +310,7 @@ async function sendEmailNotifications(record) {
     }
 
     const baseParams = createEmailTemplateParams(record);
-    const applicantEmail = baseParams.applicant_email;
+    const applicantEmail = baseParams.email;
 
     const emailJobs = [];
 
@@ -344,7 +344,10 @@ async function sendEmailJs(templateId, templateParams) {
     });
 
     if (!response.ok) {
-        throw new Error('EmailJS request failed');
+        const errorText = await response.text().catch(function () {
+            return '';
+        });
+        throw new Error(`EmailJS request failed for ${templateId}${errorText ? `: ${errorText}` : ''}`);
     }
 }
 
@@ -492,10 +495,8 @@ function createEmailTemplateParams(record) {
     const data = record.data || {};
 
     return {
-        application_id: record.application_id || '',
-        application_type: record.application_type || '',
-        applicant_name: data.applicant_name || '',
-        applicant_email: data.applicant_email || '',
+        name: data.applicant_name || '',
+        email: data.applicant_email || '',
         phone: data.phone || '',
         country: data.country || '',
         linkedin: data.linkedin || '',
@@ -504,9 +505,14 @@ function createEmailTemplateParams(record) {
         project_name: data.project_name || '',
         project_website: data.project_website || '',
         stage: data.stage || '',
-        message: buildEmailMessage(data),
-        edit_link: record.edit_link || '',
-        submitted_at: record.submitted_at || ''
+        message: data.message || buildEmailMessage(data),
+        skills: data.skills || '',
+        projects_built: data.projects_built || '',
+        availability: data.availability || '',
+        application_type: record.application_type || '',
+        application_id: record.application_id || '',
+        submitted_at: record.submitted_at || '',
+        edit_link: record.edit_link || ''
     };
 }
 
