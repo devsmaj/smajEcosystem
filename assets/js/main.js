@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initScrollTop();
     initNewsletterForms();
     initFormPersistence();
+    initCookieConsent();
     setActiveMenuItem();
 });
 
@@ -399,6 +400,43 @@ function supportsLocalStorage() {
 }
 
 window.clearSmajPersistedForm = clearSmajPersistedForm;
+
+/**
+ * Cookie Consent
+ */
+function initCookieConsent() {
+    if (!supportsLocalStorage()) return;
+    if (localStorage.getItem('smajCookieConsent')) return;
+
+    const banner = document.createElement('div');
+    banner.className = 'cookie-consent';
+    banner.setAttribute('role', 'dialog');
+    banner.setAttribute('aria-live', 'polite');
+    banner.setAttribute('aria-label', 'Cookie consent');
+    banner.innerHTML = `
+        <div class="cookie-consent-text">
+            <p>We use cookies to improve your experience, analyze traffic, and support website functionality.</p>
+            <a href="/privacy-policy/">Privacy Policy</a>
+        </div>
+        <div class="cookie-consent-actions">
+            <button type="button" class="btn cookie-btn cookie-btn-decline" data-cookie-choice="declined">Decline</button>
+            <button type="button" class="btn cookie-btn cookie-btn-accept" data-cookie-choice="accepted">Accept</button>
+        </div>
+    `;
+
+    document.body.appendChild(banner);
+
+    banner.querySelectorAll('[data-cookie-choice]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            localStorage.setItem('smajCookieConsent', button.dataset.cookieChoice);
+            banner.classList.add('cookie-consent-hidden');
+
+            window.setTimeout(function () {
+                banner.remove();
+            }, 220);
+        });
+    });
+}
 
 /**
  * Email Validation
