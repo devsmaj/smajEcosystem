@@ -24,6 +24,7 @@ const appState = {
 };
 
 document.addEventListener('DOMContentLoaded', function () {
+    initFileFeedback();
     initApplicationForms();
     initEditApplication();
 });
@@ -75,6 +76,7 @@ async function handleApplicationSubmit(form) {
     const prefix = form.dataset.applicationPrefix || 'APP';
     const payload = collectFormPayload(form);
     const files = collectFiles(form);
+    const fileValidation = validateSelectedFiles(files);
     const applicationId = createApplicationId(prefix);
     const editToken = createToken();
     const submittedAt = new Date().toISOString();
@@ -91,14 +93,22 @@ async function handleApplicationSubmit(form) {
         files: []
     };
 
-    setStatus(status, 'Sending application...', 'info');
+    if (!fileValidation.valid) {
+        setStatus(status, fileValidation.message, 'error');
+        return;
+    }
+
+    setStatus(status, 'Submitting application...', 'info');
     setButtonLoading(submitButton, true);
 
     try {
-        const firebaseReady = await initFirebase();
+        const firebaseReady = await withTimeout(initFirebase(), 12000, 'Firebase connection timed out. Please check your internet and Firebase settings.');
 
         if (firebaseReady) {
+            setStatus(status, files.length ? 'Uploading files...' : 'Saving application...', 'info');
             record.files = await uploadApplicationFiles(applicationId, files);
+            setFileUploadSuccess(record.files);
+            setStatus(status, 'Saving application...', 'info');
             await saveApplicationRecord(applicationId, record);
         } else {
             record.files = files.map(function (file) {
@@ -114,19 +124,55 @@ async function handleApplicationSubmit(form) {
         }
 
         try {
+            setStatus(status, 'Sending confirmation emails...', 'info');
             await sendEmailNotifications(record);
         } catch (emailError) {
             console.error('Email notification failed:', emailError);
         }
         showApplicationSuccess(record);
         form.reset();
-        setStatus(status, 'Application received. Save your application ID and edit link.', 'success');
+        setStatus(status, 'Application submitted successfully. Save your application ID and edit link.', 'success');
     } catch (error) {
         console.error(error);
-        setStatus(status, 'Something went wrong. Please check the form and try again.', 'error');
+        setStatus(status, error.message || 'Something went wrong. Please check the form and try again.', 'error');
     } finally {
         setButtonLoading(submitButton, false);
     }
+}
+
+function initFileFeedback() {
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+
+    fileInputs.forEach(function (input) {
+        input.addEventListener('change', function () {
+            const feedback = findFileFeedback(input);
+            const files = Array.from(input.files || []);
+
+            if (!feedback) return;
+
+            if (!files.length) {
+                feedback.textContent = '';
+                feedback.dataset.status = '';
+                return;
+            }
+
+            const imageFiles = files.filter(function (file) {
+                return file.type.startsWith('image/');
+            });
+
+            if (input.multiple && imageFiles.length > 3) {
+                input.value = '';
+                feedback.textContent = 'Please select up to 3 images only.';
+                feedback.dataset.status = 'error';
+                return;
+            }
+
+            feedback.textContent = files.length === 1
+                ? `${files[0].name} selected.`
+                : `${files.length} files selected. Upload will complete when you submit.`;
+            feedback.dataset.status = 'info';
+        });
+    });
 }
 
 function collectFormPayload(form) {
@@ -164,6 +210,29 @@ function collectFiles(form) {
     return files;
 }
 
+function validateSelectedFiles(files) {
+    const groupedImages = {};
+
+    for (const item of files) {
+        if (item.file.type.startsWith('image/')) {
+            groupedImages[item.field] = (groupedImages[item.field] || 0) + 1;
+        }
+    }
+
+    const tooManyImages = Object.keys(groupedImages).find(function (field) {
+        return groupedImages[field] > 3;
+    });
+
+    if (tooManyImages) {
+        return {
+            valid: false,
+            message: 'Please upload no more than 3 images in each image upload field.'
+        };
+    }
+
+    return { valid: true, message: '' };
+}
+
 async function uploadApplicationFiles(applicationId, files) {
     const uploaded = [];
     const modules = appState.firebaseModules;
@@ -172,7 +241,11 @@ async function uploadApplicationFiles(applicationId, files) {
         const storagePath = `applications/${applicationId}/${item.field}/${Date.now()}-${item.file.name}`;
         const fileRef = modules.ref(appState.storage, storagePath);
 
-        await modules.uploadBytes(fileRef, item.file);
+        await withTimeout(
+            modules.uploadBytes(fileRef, item.file),
+            30000,
+            `Upload timed out for ${item.file.name}. Try a smaller file or check Firebase Storage rules.`
+        );
 
         uploaded.push({
             field: item.field,
@@ -180,7 +253,11 @@ async function uploadApplicationFiles(applicationId, files) {
             size: item.file.size,
             type: item.file.type,
             storagePath,
-            downloadUrl: await modules.getDownloadURL(fileRef)
+            downloadUrl: await withTimeout(
+                modules.getDownloadURL(fileRef),
+                15000,
+                `Could not get upload link for ${item.file.name}.`
+            )
         });
     }
 
@@ -191,7 +268,11 @@ async function saveApplicationRecord(applicationId, record) {
     const modules = appState.firebaseModules;
     const docRef = modules.doc(appState.db, 'applications', applicationId);
 
-    await modules.setDoc(docRef, record);
+    await withTimeout(
+        modules.setDoc(docRef, record),
+        20000,
+        'Saving application timed out. Please check Firestore rules and try again.'
+    );
 }
 
 async function sendEmailNotifications(record) {
@@ -212,7 +293,11 @@ async function sendEmailNotifications(record) {
         emailJobs.push(sendEmailJs(emailJsConfig.userTemplateId, baseParams));
     }
 
-    await Promise.all(emailJobs);
+    await withTimeout(
+        Promise.all(emailJobs),
+        15000,
+        'Application saved, but email confirmation timed out.'
+    );
 }
 
 async function sendEmailJs(templateId, templateParams) {
@@ -232,6 +317,43 @@ async function sendEmailJs(templateId, templateParams) {
     if (!response.ok) {
         throw new Error('EmailJS request failed');
     }
+}
+
+function setFileUploadSuccess(files) {
+    const uploadedByField = {};
+
+    files.forEach(function (file) {
+        uploadedByField[file.field] = (uploadedByField[file.field] || 0) + 1;
+    });
+
+    Object.keys(uploadedByField).forEach(function (field) {
+        const feedback = document.querySelector(`[data-file-feedback="${field}"]`);
+        const count = uploadedByField[field];
+
+        if (!feedback) return;
+
+        feedback.textContent = count === 1
+            ? 'Upload successful.'
+            : `${count} files uploaded successfully.`;
+        feedback.dataset.status = 'success';
+    });
+}
+
+function findFileFeedback(input) {
+    return document.querySelector(`[data-file-feedback="${input.name}"]`);
+}
+
+function withTimeout(promise, timeoutMs, message) {
+    let timeoutId;
+    const timeout = new Promise(function (_, reject) {
+        timeoutId = setTimeout(function () {
+            reject(new Error(message));
+        }, timeoutMs);
+    });
+
+    return Promise.race([promise, timeout]).finally(function () {
+        clearTimeout(timeoutId);
+    });
 }
 
 function saveDemoApplication(record) {

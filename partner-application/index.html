@@ -35,7 +35,7 @@
                     <a href="/contact/" class="nav-link">Contact</a>
                 </nav>
                 <a href="/contact/" class="btn btn-nav-cta">Partner With Us</a>
-                <button class="btn-menu-toggle" type="button" aria-expanded="false" aria-label="Toggle menu"><span class="icon-open">â˜°</span><span class="icon-close">âœ–</span></button>
+                <button class="btn-menu-toggle" type="button" aria-expanded="false" aria-label="Toggle menu"><span class="icon-open">&#9776;</span><span class="icon-close">&times;</span></button>
             </div>
         </div>
         <div class="mobile-menu-overlay"></div>
@@ -102,7 +102,8 @@
                             <div class="form-group form-wide"><label for="partnershipGoal">Partnership Goal</label><textarea id="partnershipGoal" name="partnership_goal" required></textarea></div>
                             <div class="form-group form-wide"><label for="companyDescription">Company Description</label><textarea id="companyDescription" name="company_description" required></textarea></div>
                             <div class="form-group form-wide"><label for="message">What do you want to build with SMAJ?</label><textarea id="message" name="message" required></textarea></div>
-                            <div class="form-group form-wide"><label for="company_profile">Upload Company Profile</label><input id="company_profile" name="company_profile" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx"></div>
+                            <div class="form-group"><label for="company_profile">Upload Company Profile</label><input id="company_profile" name="company_profile" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx"><span class="file-feedback" data-file-feedback="company_profile"></span></div>
+                            <div class="form-group"><label for="supporting_images">Upload Company Images</label><input id="supporting_images" name="supporting_images" type="file" accept="image/*" multiple><span class="file-feedback" data-file-feedback="supporting_images"></span></div>
                         </div>
 
                         <p class="form-note">Your application will be securely submitted to SMAJ Ecosystem for review. You will receive an application ID and edit link after submission.</p>
@@ -122,6 +123,8 @@
     <script type="module" src="/assets/js/application-form.js"></script>
 </body>
 </html>
+
+
 
 
 

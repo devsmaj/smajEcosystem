@@ -42,8 +42,8 @@
                 </nav>
                 <a href="/contact/" class="btn btn-nav-cta">Partner With Us</a>
                 <button class="btn-menu-toggle" type="button" aria-expanded="false" aria-label="Toggle menu">
-                    <span class="icon-open">â˜°</span>
-                    <span class="icon-close">âœ–</span>
+                    <span class="icon-open">&#9776;</span>
+                    <span class="icon-close">&times;</span>
                 </button>
             </div>
         </div>
@@ -117,8 +117,8 @@
                             <div class="form-group"><label for="team_size">Team Size</label><input id="team_size" name="team_size" type="number" min="1" required></div>
                             <div class="form-group form-wide"><label for="projectDescription">Project Description</label><textarea id="projectDescription" name="project_description" required></textarea></div>
                             <div class="form-group form-wide"><label for="problemSolved">Problem Solved</label><textarea id="problemSolved" name="problem_solved" required></textarea></div>
-                            <div class="form-group"><label for="pitch_deck">Upload Pitch Deck</label><input id="pitch_deck" name="pitch_deck" type="file" accept=".pdf,.ppt,.pptx"></div>
-                            <div class="form-group"><label for="screenshots">Upload Screenshots</label><input id="screenshots" name="screenshots" type="file" accept="image/*,.pdf" multiple></div>
+                            <div class="form-group"><label for="pitch_deck">Upload Pitch Deck</label><input id="pitch_deck" name="pitch_deck" type="file" accept=".pdf,.ppt,.pptx"><span class="file-feedback" data-file-feedback="pitch_deck"></span></div>
+                            <div class="form-group"><label for="screenshots">Upload Screenshots</label><input id="screenshots" name="screenshots" type="file" accept="image/*" multiple><span class="file-feedback" data-file-feedback="screenshots"></span></div>
                             <div class="form-group form-wide"><label for="message">Why do you want to build with SMAJ?</label><textarea id="message" name="message" required></textarea></div>
                         </div>
 
@@ -150,6 +150,8 @@
     <script type="module" src="/assets/js/application-form.js"></script>
 </body>
 </html>
+
+
 
 
 

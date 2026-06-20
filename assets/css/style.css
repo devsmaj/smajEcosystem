@@ -1025,6 +1025,26 @@ section {
     cursor: pointer;
 }
 
+.file-feedback {
+    color: var(--text-secondary);
+    display: block;
+    font-size: 13px;
+    font-weight: 800;
+    margin-top: 8px;
+}
+
+.file-feedback[data-status="success"] {
+    color: #047857;
+}
+
+.file-feedback[data-status="error"] {
+    color: #b91c1c;
+}
+
+.file-feedback[data-status="info"] {
+    color: var(--text-secondary);
+}
+
 .form-note {
     background: #fff7ed;
     border: 1px solid #fed7aa;
