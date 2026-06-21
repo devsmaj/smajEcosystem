@@ -409,7 +409,7 @@ function initCookieConsent() {
     if (localStorage.getItem('smajCookieConsent')) return;
 
     const banner = document.createElement('div');
-    banner.className = 'cookie-consent';
+    banner.className = 'cookie-consent cookie-consent-enter';
     banner.setAttribute('role', 'dialog');
     banner.setAttribute('aria-live', 'polite');
     banner.setAttribute('aria-label', 'Cookie consent');
@@ -425,6 +425,11 @@ function initCookieConsent() {
     `;
 
     document.body.appendChild(banner);
+
+    window.setTimeout(function () {
+        banner.classList.remove('cookie-consent-enter');
+        banner.classList.add('cookie-consent-visible');
+    }, 1100);
 
     banner.querySelectorAll('[data-cookie-choice]').forEach(function (button) {
         button.addEventListener('click', function () {

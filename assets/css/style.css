@@ -1153,10 +1153,22 @@ section {
     max-width: min(960px, calc(100% - 32px));
     padding: 18px;
     position: fixed;
-    transform: translateX(-50%);
-    transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+    transform: translate(-50%, 0);
+    transition: opacity 0.55s ease, transform 0.55s ease, visibility 0.55s ease;
     width: 100%;
     z-index: 1300;
+}
+
+.cookie-consent-enter {
+    opacity: 0;
+    transform: translate(-50%, 18px);
+    visibility: hidden;
+}
+
+.cookie-consent-visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    visibility: visible;
 }
 
 .cookie-consent-hidden {
