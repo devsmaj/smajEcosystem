@@ -112,7 +112,7 @@ The site is fully built as a responsive static SMAJ Ecosystem website with compl
 
 ## Application System
 
-The application pages are ready for a GitHub Pages + Firebase setup:
+The application pages are ready for a GitHub Pages + Supabase setup:
 
 - `/founder-application/` saves Founder Partnership applications.
 - `/builder-application/` saves Technology Builder applications.
@@ -121,13 +121,15 @@ The application pages are ready for a GitHub Pages + Firebase setup:
 
 The shared script is `assets/js/application-form.js`.
 
-The application script is configured for Firebase and EmailJS. For production, keep Firestore and Firebase Storage security rules strict, and use the EmailJS templates listed below.
+The application script is configured for Supabase and EmailJS. For production, keep Supabase Row Level Security and Storage policies strict, and use the EmailJS templates listed below.
 
 EmailJS templates must use these exact variables:
 
 ```text
 {{application_id}}
 {{application_type}}
+{{application_status}}
+{{status_label}}
 {{applicant_name}}
 {{applicant_email}}
 {{phone}}
@@ -141,4 +143,19 @@ EmailJS templates must use these exact variables:
 {{message}}
 {{edit_link}}
 {{submitted_at}}
+{{admin_notes}}
+{{company_name}}
+{{reply_to}}
 ```
+
+## Admin Dashboard
+
+Static admin MVP pages are available at:
+
+- `/admin-login.html`
+- `/admin.html`
+- `/application-details.html?id=SMAJ-BLD-2026-0001`
+
+The admin UI uses the existing Supabase anon key and a client-side password gate for MVP review workflows. The default MVP password is `SMAJ-Admin-2026`; change the SHA-256 hash in `assets/js/admin.js` before production. Do not expose a Supabase `service_role` key in browser code.
+
+For live Supabase reads and updates, configure authenticated admin RLS policies. See `supabase-applications-policies.sql` for the recommended policy shape.

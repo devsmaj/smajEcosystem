@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Application Details | SMAJ Ecosystem</title>
+    <link rel="icon" type="image/png" href="/assets/images/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/admin.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+</head>
+<body class="admin-body" data-admin-page="details">
+    <header class="admin-topbar">
+        <a href="/admin.html" class="admin-brand">
+            <img src="/assets/images/logo.jpg" alt="SMAJ Ecosystem Logo">
+            <span>SMAJ Admin</span>
+        </a>
+        <nav class="admin-actions">
+            <a href="/admin.html" class="btn btn-outline">Dashboard</a>
+            <button type="button" class="btn btn-primary" data-admin-logout>Logout</button>
+        </nav>
+    </header>
+
+    <main class="admin-main">
+        <section class="admin-hero">
+            <div>
+                <span class="application-kicker">Application Review</span>
+                <h1 data-detail-title>Application Details</h1>
+                <p data-detail-subtitle>Review applicant information, update status, and add admin notes.</p>
+            </div>
+        </section>
+
+        <p class="application-status" data-admin-status aria-live="polite"></p>
+
+        <section class="admin-detail-layout">
+            <article class="admin-panel">
+                <div class="admin-panel-header">
+                    <div>
+                        <h2>Applicant Details</h2>
+                        <p>Full submitted information from Supabase.</p>
+                    </div>
+                </div>
+                <div class="admin-detail-grid" data-detail-content></div>
+            </article>
+
+            <aside class="admin-panel admin-review-panel">
+                <h2>Review Decision</h2>
+                <div class="form-group">
+                    <label for="detailStatus">Application Status</label>
+                    <select id="detailStatus" data-detail-status>
+                        <option value="pending">Pending</option>
+                        <option value="interview">Interview</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="adminNotes">Admin Notes</label>
+                    <textarea id="adminNotes" data-admin-notes placeholder="Add review notes, interview timing, or decision context."></textarea>
+                </div>
+                <div class="admin-button-stack">
+                    <button type="button" class="btn btn-accent" data-status-action="interview">Schedule Interview</button>
+                    <button type="button" class="btn btn-primary" data-status-action="accepted">Accept</button>
+                    <button type="button" class="btn btn-outline admin-danger" data-status-action="rejected">Reject</button>
+                    <button type="button" class="btn btn-outline" data-save-notes>Save Notes</button>
+                </div>
+            </aside>
+        </section>
+    </main>
+
+    <script type="module" src="/assets/js/admin.js"></script>
+</body>
+</html>

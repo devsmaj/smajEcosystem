@@ -689,6 +689,7 @@ function getProgressStepState(index, currentStatus) {
 
 function getProgressCount(status) {
     const counts = {
+        pending: 2,
         submitted: 2,
         under_review: 2,
         interview: 3,
@@ -701,6 +702,7 @@ function getProgressCount(status) {
 
 function getCompletedStepCount(status) {
     const counts = {
+        pending: 1,
         submitted: 1,
         under_review: 1,
         interview: 2,
@@ -712,13 +714,14 @@ function getCompletedStepCount(status) {
 }
 
 function normalizeApplicationStatus(status) {
-    return ['submitted', 'under_review', 'interview', 'accepted', 'rejected'].includes(status)
+    return ['pending', 'submitted', 'under_review', 'interview', 'accepted', 'rejected'].includes(status)
         ? status
         : 'submitted';
 }
 
 function formatStatus(status) {
     const labels = {
+        pending: 'Pending',
         submitted: 'Submitted',
         under_review: 'Under Review',
         interview: 'Interview',

@@ -22,3 +22,36 @@ for insert
 to anon
 with check (bucket_id = 'applicatoins');
 
+-- Admin dashboard note:
+-- The static admin MVP uses the anon key and a client-side password gate only.
+-- Do not add broad anon SELECT or UPDATE policies in production, because anyone
+-- with the anon key could read or modify applications outside the UI.
+--
+-- Production recommendation:
+-- 1. Enable Supabase Auth for admin users.
+-- 2. Create an admin allowlist table keyed by auth.uid().
+-- 3. Add SELECT and UPDATE policies for authenticated admin users only.
+--
+-- Example shape to adapt after creating public.admin_users(user_id uuid primary key):
+--
+-- create policy "Allow authenticated admins to read applications"
+-- on public.applications
+-- for select
+-- to authenticated
+-- using (exists (
+--     select 1 from public.admin_users
+--     where admin_users.user_id = auth.uid()
+-- ));
+--
+-- create policy "Allow authenticated admins to update applications"
+-- on public.applications
+-- for update
+-- to authenticated
+-- using (exists (
+--     select 1 from public.admin_users
+--     where admin_users.user_id = auth.uid()
+-- ))
+-- with check (exists (
+--     select 1 from public.admin_users
+--     where admin_users.user_id = auth.uid()
+-- ));

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Admin Dashboard | SMAJ Ecosystem</title>
+    <link rel="icon" type="image/png" href="/assets/images/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/admin.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+</head>
+<body class="admin-body" data-admin-page="dashboard">
+    <header class="admin-topbar">
+        <a href="/admin.html" class="admin-brand">
+            <img src="/assets/images/logo.jpg" alt="SMAJ Ecosystem Logo">
+            <span>SMAJ Admin</span>
+        </a>
+        <nav class="admin-actions">
+            <a href="/" class="btn btn-outline">Website</a>
+            <button type="button" class="btn btn-primary" data-admin-logout>Logout</button>
+        </nav>
+    </header>
+
+    <main class="admin-main">
+        <section class="admin-hero">
+            <div>
+                <span class="application-kicker">Applications</span>
+                <h1>Admin Dashboard</h1>
+                <p>Review founder, builder, and partner applications from the Supabase applications table.</p>
+            </div>
+            <button type="button" class="btn btn-accent" data-admin-refresh>
+                <i class="bx bx-refresh"></i>
+                Refresh
+            </button>
+        </section>
+
+        <section class="admin-stat-grid" aria-label="Application counts">
+            <article class="admin-stat-card"><span>Total</span><strong data-count-total>0</strong></article>
+            <article class="admin-stat-card"><span>Pending</span><strong data-count-pending>0</strong></article>
+            <article class="admin-stat-card"><span>Interview</span><strong data-count-interview>0</strong></article>
+            <article class="admin-stat-card"><span>Accepted</span><strong data-count-accepted>0</strong></article>
+            <article class="admin-stat-card"><span>Rejected</span><strong data-count-rejected>0</strong></article>
+        </section>
+
+        <section class="admin-panel">
+            <div class="admin-panel-header">
+                <div>
+                    <h2>All Applications</h2>
+                    <p>Filter, open details, update status, and add review notes.</p>
+                </div>
+                <p class="application-status" data-admin-status aria-live="polite"></p>
+            </div>
+
+            <div class="admin-filters">
+                <div class="form-group">
+                    <label for="typeFilter">Application Type</label>
+                    <select id="typeFilter" data-filter-type>
+                        <option value="">All types</option>
+                        <option value="Founder Partnership">Founder</option>
+                        <option value="Technology Builder">Technology Builder</option>
+                        <option value="Strategic Partnership">Partner / Collaborator</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="statusFilter">Status</label>
+                    <select id="statusFilter" data-filter-status>
+                        <option value="">All statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="interview">Interview</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="admin-table-wrap">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Application ID</th>
+                            <th>Applicant</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody data-applications-list>
+                        <tr><td colspan="6">Loading applications...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="/assets/js/admin.js"></script>
+</body>
+</html>

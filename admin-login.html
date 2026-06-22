@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Admin Login | SMAJ Ecosystem</title>
+    <link rel="icon" type="image/png" href="/assets/images/logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/admin.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+</head>
+<body class="admin-body">
+    <main class="admin-login-shell">
+        <section class="admin-login-card">
+            <a href="/" class="admin-brand" aria-label="SMAJ Ecosystem home">
+                <img src="/assets/images/logo.jpg" alt="SMAJ Ecosystem Logo">
+                <span>SMAJ Ecosystem</span>
+            </a>
+            <span class="application-kicker">Admin Portal</span>
+            <h1>Review applications professionally.</h1>
+            <p>Access the SMAJ Ecosystem application dashboard for review, interviews, decisions, and admin notes.</p>
+
+            <form data-admin-login-form>
+                <div class="form-group">
+                    <label for="adminPassword">Admin Password</label>
+                    <input id="adminPassword" name="adminPassword" type="password" autocomplete="current-password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+                <p class="application-status" data-admin-login-status aria-live="polite"></p>
+            </form>
+        </section>
+    </main>
+
+    <script type="module" src="/assets/js/admin.js"></script>
+</body>
+</html>
