@@ -10,7 +10,7 @@ const emailJsConfig = {
     serviceId: "service_jsd5hom",
     adminTemplateId: "template_onw8b66",
     userTemplateId: "template_5h069ek",
-    adminEmail: "officialsmaj@gmail.com"
+    adminEmail: "contact@smaj.org"
 };
 
 const appState = {
