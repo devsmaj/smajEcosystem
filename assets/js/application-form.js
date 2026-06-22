@@ -17,6 +17,14 @@ const appState = {
     supabaseReady: Boolean(supabaseConfig.url && supabaseConfig.anonKey)
 };
 
+const applicationStatusSteps = [
+    { status: 'submitted', label: 'Application Submitted' },
+    { status: 'under_review', label: 'Application Review' },
+    { status: 'interview', label: 'Founder / Team Interview' },
+    { status: 'accepted', label: 'Final Decision' },
+    { status: 'accepted', label: 'Join SMAJ Ecosystem Team' }
+];
+
 document.addEventListener('DOMContentLoaded', function () {
     initFileFeedback();
     initApplicationForms();
@@ -27,6 +35,13 @@ function initApplicationForms() {
     const forms = document.querySelectorAll('[data-application-form]');
 
     forms.forEach(function (form) {
+        const savedRecord = getSavedApplicationForForm(form);
+
+        if (savedRecord) {
+            showApplicationDashboard(form, savedRecord, false);
+            return;
+        }
+
         form.addEventListener('submit', async function (event) {
             event.preventDefault();
             await handleApplicationSubmit(form);
@@ -42,6 +57,12 @@ async function handleApplicationSubmit(form) {
     const payload = collectFormPayload(form);
     const files = collectFiles(form);
     const fileValidation = validateSelectedFiles(files);
+
+    if (!fileValidation.valid) {
+        setStatus(status, fileValidation.message, 'error');
+        return;
+    }
+
     const applicationId = createApplicationId(prefix);
     const editToken = createToken();
     const submittedAt = new Date().toISOString();
@@ -51,17 +72,12 @@ async function handleApplicationSubmit(form) {
         edit_token: editToken,
         application_type: applicationType,
         edit_link: editLink,
-        status: 'received',
+        status: 'submitted',
         submitted_at: submittedAt,
         updated_at: submittedAt,
         data: payload,
         files: []
     };
-
-    if (!fileValidation.valid) {
-        setStatus(status, fileValidation.message, 'error');
-        return;
-    }
 
     setStatus(status, 'Submitting application...', 'info');
     setButtonLoading(submitButton, true);
@@ -87,15 +103,16 @@ async function handleApplicationSubmit(form) {
             window.clearSmajPersistedForm(form);
         }
 
-        const successUrl = new URL('/success/', window.location.origin);
-        successUrl.searchParams.set('id', applicationId);
-        window.location.href = successUrl.toString();
+        setStatus(status, 'Application submitted successfully.', 'success');
+        showApplicationDashboard(form, record, true);
         return;
     } catch (error) {
         console.error(error);
         setStatus(status, error.message || 'Something went wrong. Please check the form and try again.', 'error');
     } finally {
-        setButtonLoading(submitButton, false);
+        if (!form.hidden) {
+            setButtonLoading(submitButton, false);
+        }
     }
 }
 
@@ -469,8 +486,10 @@ function saveDemoApplication(record) {
 
 function createApplicationId(prefix) {
     const year = new Date().getFullYear();
-    const random = Math.floor(10000 + Math.random() * 90000);
-    return `SMAJ-${prefix}-${year}-${random}`;
+    const counterKey = `smajApplicationCounter:${prefix}:${year}`;
+    const nextNumber = Number(localStorage.getItem(counterKey) || '0') + 1;
+    localStorage.setItem(counterKey, String(nextNumber));
+    return `SMAJ-${prefix}-${year}-${String(nextNumber).padStart(4, '0')}`;
 }
 
 function createToken() {
@@ -511,6 +530,7 @@ function createEmailTemplateParams(record) {
         availability: data.availability || '',
         application_type: record.application_type || '',
         application_id: record.application_id || '',
+        application_status: record.status || 'submitted',
         submitted_at: record.submitted_at || '',
         edit_link: record.edit_link || ''
     };
@@ -557,6 +577,194 @@ function showApplicationSuccess(record) {
         </div>
     `;
     result.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function showApplicationDashboard(form, record, isFreshSubmission) {
+    const result = form.parentElement.querySelector('[data-application-result]');
+    const submitButton = form.querySelector('[type="submit"]');
+
+    record.status = normalizeApplicationStatus(record.status);
+    record.updated_at = record.updated_at || record.submitted_at || new Date().toISOString();
+    saveDemoApplication(record);
+    saveApplicationForForm(form, record);
+
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Application Submitted ✓';
+        submitButton.classList.add('btn-submitted');
+    }
+
+    form.hidden = true;
+
+    if (!result) return;
+
+    result.hidden = false;
+    result.innerHTML = createApplicationDashboardHtml(record, isFreshSubmission);
+
+    if (isFreshSubmission) {
+        result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function createApplicationDashboardHtml(record, isFreshSubmission) {
+    const status = normalizeApplicationStatus(record.status);
+    const submittedDate = record.submitted_at ? formatDate(record.submitted_at) : 'Submitted';
+    const projectName = record.data && record.data.project_name ? record.data.project_name : record.application_type;
+
+    return `
+        <div class="application-success-panel">
+            <span class="application-kicker">${isFreshSubmission ? 'Submission Complete' : 'Application Dashboard'}</span>
+            <h3>Your application has been received successfully.</h3>
+            <p>Our team will review your information. If your profile matches SMAJ Ecosystem requirements, we will contact you for an interview.</p>
+            <button type="button" class="btn btn-primary btn-submitted" disabled>Application Submitted ✓</button>
+        </div>
+
+        <div class="application-summary-grid">
+            <div>
+                <span>Application ID</span>
+                <strong>${escapeHtml(record.application_id)}</strong>
+            </div>
+            <div>
+                <span>Status</span>
+                <strong>${formatStatus(status)}</strong>
+            </div>
+            <div>
+                <span>Application Type</span>
+                <strong>${escapeHtml(record.application_type || '')}</strong>
+            </div>
+            <div>
+                <span>Submitted</span>
+                <strong>${escapeHtml(submittedDate)}</strong>
+            </div>
+            <div class="application-summary-wide">
+                <span>Profile / Project</span>
+                <strong>${escapeHtml(projectName || 'SMAJ Ecosystem Application')}</strong>
+            </div>
+        </div>
+
+        <div class="application-progress-card">
+            <div class="application-progress-header">
+                <h3>Application Progress</h3>
+                <span>${getCompletedStepCount(status)}/5</span>
+            </div>
+            <ol class="application-progress-list">
+                ${applicationStatusSteps.map(function (step, index) {
+                    return createProgressStepHtml(step, index, status);
+                }).join('')}
+            </ol>
+        </div>
+
+        <div class="application-support-card">
+            <strong>Need help?</strong>
+            <a href="mailto:contact@smaj.org">contact@smaj.org</a>
+        </div>
+    `;
+}
+
+function createProgressStepHtml(step, index, currentStatus) {
+    const state = getProgressStepState(index, currentStatus);
+    const icons = {
+        complete: '✓',
+        active: '⏳',
+        locked: '🔒'
+    };
+
+    return `
+        <li class="application-progress-step application-progress-${state}">
+            <span class="application-progress-icon">${icons[state]}</span>
+            <span>${index + 1}. ${escapeHtml(step.label)}</span>
+        </li>
+    `;
+}
+
+function getProgressStepState(index, currentStatus) {
+    const progressCount = getProgressCount(currentStatus);
+
+    if (index + 1 < progressCount) return 'complete';
+    if (index + 1 === progressCount) {
+        return currentStatus === 'accepted' ? 'complete' : 'active';
+    }
+    return 'locked';
+}
+
+function getProgressCount(status) {
+    const counts = {
+        submitted: 2,
+        under_review: 2,
+        interview: 3,
+        accepted: 5,
+        rejected: 4
+    };
+
+    return counts[normalizeApplicationStatus(status)] || 2;
+}
+
+function getCompletedStepCount(status) {
+    const counts = {
+        submitted: 1,
+        under_review: 1,
+        interview: 2,
+        accepted: 5,
+        rejected: 3
+    };
+
+    return counts[normalizeApplicationStatus(status)] || 1;
+}
+
+function normalizeApplicationStatus(status) {
+    return ['submitted', 'under_review', 'interview', 'accepted', 'rejected'].includes(status)
+        ? status
+        : 'submitted';
+}
+
+function formatStatus(status) {
+    const labels = {
+        submitted: 'Submitted',
+        under_review: 'Under Review',
+        interview: 'Interview',
+        accepted: 'Accepted',
+        rejected: 'Rejected'
+    };
+
+    return labels[normalizeApplicationStatus(status)];
+}
+
+function getApplicationStorageKey(form) {
+    return `smajApplicationSubmission:${form.dataset.persistForm || form.dataset.applicationPrefix || form.dataset.applicationForm}`;
+}
+
+function saveApplicationForForm(form, record) {
+    localStorage.setItem(getApplicationStorageKey(form), JSON.stringify(record));
+}
+
+function getSavedApplicationForForm(form) {
+    try {
+        const rawRecord = localStorage.getItem(getApplicationStorageKey(form));
+        return rawRecord ? JSON.parse(rawRecord) : null;
+    } catch (error) {
+        return null;
+    }
+}
+
+function formatDate(value) {
+    try {
+        return new Intl.DateTimeFormat('en', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit'
+        }).format(new Date(value));
+    } catch (error) {
+        return value;
+    }
+}
+
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
 function initEditApplication() {

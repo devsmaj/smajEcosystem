@@ -1240,6 +1240,181 @@ section {
     margin-bottom: 8px;
 }
 
+.application-success-panel {
+    background: var(--white);
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 26px;
+}
+
+.application-success-panel h3 {
+    color: var(--secondary-color);
+    font-size: clamp(24px, 3vw, 32px);
+    line-height: 1.12;
+    margin-bottom: 12px;
+}
+
+.application-success-panel p {
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin-bottom: 20px;
+    max-width: 720px;
+}
+
+.btn-submitted,
+.btn-submitted:disabled {
+    background: #047857;
+    box-shadow: none;
+    color: var(--white);
+    cursor: default;
+    opacity: 1;
+    transform: none;
+}
+
+.application-summary-grid {
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 18px;
+}
+
+.application-summary-grid div,
+.application-support-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.application-summary-grid span {
+    color: var(--text-secondary);
+    display: block;
+    font-size: 12px;
+    font-weight: 900;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.application-summary-grid strong,
+.application-support-card a {
+    color: var(--secondary-color);
+    overflow-wrap: anywhere;
+}
+
+.application-summary-wide {
+    grid-column: 1 / -1;
+}
+
+.application-progress-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(16, 24, 39, 0.06);
+    margin-top: 18px;
+    overflow: hidden;
+}
+
+.application-progress-header {
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    padding: 22px 24px;
+}
+
+.application-progress-header h3 {
+    color: var(--secondary-color);
+    font-size: 20px;
+    margin: 0;
+}
+
+.application-progress-header span {
+    color: var(--secondary-color);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.application-progress-list {
+    counter-reset: none;
+    display: grid;
+    gap: 0;
+    list-style: none;
+    padding: 18px 24px 22px;
+}
+
+.application-progress-step {
+    align-items: center;
+    color: var(--text-muted);
+    display: grid;
+    font-size: 16px;
+    font-weight: 900;
+    gap: 16px;
+    grid-template-columns: 42px minmax(0, 1fr);
+    min-height: 62px;
+    position: relative;
+}
+
+.application-progress-step:not(:last-child)::after {
+    background: #e6eaf0;
+    content: "";
+    height: 28px;
+    left: 20px;
+    position: absolute;
+    top: 48px;
+    width: 2px;
+}
+
+.application-progress-icon {
+    align-items: center;
+    background: #f3f4f6;
+    border: 1px solid #d8dee8;
+    border-radius: 50%;
+    display: flex;
+    font-size: 18px;
+    height: 40px;
+    justify-content: center;
+    width: 40px;
+}
+
+.application-progress-complete,
+.application-progress-active {
+    color: var(--secondary-color);
+}
+
+.application-progress-complete .application-progress-icon {
+    background: #ecfdf5;
+    border-color: #bbf7d0;
+    color: #047857;
+}
+
+.application-progress-active .application-progress-icon {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #c2410c;
+}
+
+.application-progress-locked .application-progress-icon {
+    color: #98a2b3;
+}
+
+.application-support-card {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: space-between;
+    margin-top: 18px;
+}
+
+.application-support-card strong {
+    color: var(--secondary-color);
+}
+
+.application-support-card a {
+    color: var(--primary-color);
+    font-weight: 900;
+}
+
 .application-result-grid {
     display: grid;
     gap: 14px;
@@ -1672,6 +1847,40 @@ section {
 
     .form-grid {
         grid-template-columns: 1fr;
+    }
+
+    .application-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .application-success-panel,
+    .application-card,
+    .application-result {
+        padding: 20px;
+    }
+
+    .application-progress-header {
+        padding: 18px;
+    }
+
+    .application-progress-list {
+        padding: 16px 18px 20px;
+    }
+
+    .application-progress-step {
+        gap: 12px;
+        grid-template-columns: 38px minmax(0, 1fr);
+        min-height: 58px;
+    }
+
+    .application-progress-icon {
+        height: 36px;
+        width: 36px;
+    }
+
+    .application-progress-step:not(:last-child)::after {
+        left: 18px;
+        top: 45px;
     }
 
     .hero-buttons,
