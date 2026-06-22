@@ -1,15 +1,20 @@
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { smajEnv } from "./env.js";
+
 const supabaseConfig = {
-    url: "https://fqfcxitcnseyrunglkqy.supabase.co",
-    anonKey: "sb_publishable_SA3t6uGPtSDPofYVa1XGVQ_qOaVZn7Y",
-    table: "applications"
+    url: smajEnv.SUPABASE_URL,
+    publishableKey: smajEnv.SUPABASE_PUBLISHABLE_KEY,
+    table: smajEnv.SUPABASE_APPLICATION_TABLE
 };
 
 const emailJsConfig = {
-    publicKey: "8P_4KsqS5t0soM0gX",
-    serviceId: "service_32losmn",
-    userTemplateId: "template_5h069ek",
-    adminEmail: "contact@smaj.org"
+    publicKey: smajEnv.EMAILJS_PUBLIC_KEY,
+    serviceId: smajEnv.EMAILJS_SERVICE_ID,
+    userTemplateId: smajEnv.EMAILJS_USER_TEMPLATE_ID,
+    adminEmail: smajEnv.SMAJ_CONTACT_EMAIL
 };
+
+const supabaseClient = createClient(supabaseConfig.url, supabaseConfig.publishableKey);
 
 const adminConfig = {
     sessionKey: "smajAdminSession",
@@ -85,6 +90,7 @@ function initDashboard() {
     if (document.body.dataset.adminPage !== 'dashboard') return;
 
     document.querySelector('[data-admin-refresh]')?.addEventListener('click', loadApplications);
+    document.querySelector('[data-filter-search]')?.addEventListener('input', renderApplications);
     document.querySelector('[data-filter-type]')?.addEventListener('change', renderApplications);
     document.querySelector('[data-filter-status]')?.addEventListener('change', renderApplications);
 
@@ -150,31 +156,35 @@ async function loadApplicationDetails() {
 }
 
 async function fetchApplications() {
-    const url = `${supabaseConfig.url}/rest/v1/${supabaseConfig.table}?select=*&order=submitted_at.desc`;
-    const response = await fetch(url, { headers: getSupabaseHeaders() });
+    const { data, error } = await supabaseClient
+        .from(supabaseConfig.table)
+        .select('*')
+        .order('submitted_at', { ascending: false });
 
-    if (!response.ok) {
-        throw new Error(await response.text());
+    if (error) {
+        throw error;
     }
 
-    return response.json();
+    return data || [];
 }
 
 async function fetchApplication(applicationId) {
-    const url = `${supabaseConfig.url}/rest/v1/${supabaseConfig.table}?select=*&application_id=eq.${encodeURIComponent(applicationId)}&limit=1`;
-    const response = await fetch(url, { headers: getSupabaseHeaders() });
+    const { data, error } = await supabaseClient
+        .from(supabaseConfig.table)
+        .select('*')
+        .eq('application_id', applicationId)
+        .limit(1)
+        .maybeSingle();
 
-    if (!response.ok) {
-        throw new Error(await response.text());
+    if (error) {
+        throw error;
     }
 
-    const records = await response.json();
-
-    if (!records.length) {
+    if (!data) {
         throw new Error('Application not found.');
     }
 
-    return records[0];
+    return data;
 }
 
 async function patchApplication(record, nextStatus, notes) {
@@ -187,19 +197,18 @@ async function patchApplication(record, nextStatus, notes) {
         updated_at: new Date().toISOString(),
         data
     };
-    const url = `${supabaseConfig.url}/rest/v1/${supabaseConfig.table}?application_id=eq.${encodeURIComponent(record.application_id)}`;
-    const response = await fetch(url, {
-        method: 'PATCH',
-        headers: Object.assign({}, getSupabaseHeaders(), { Prefer: 'return=representation' }),
-        body: JSON.stringify(payload)
-    });
+    const { data: updated, error } = await supabaseClient
+        .from(supabaseConfig.table)
+        .update(payload)
+        .eq('application_id', record.application_id)
+        .select()
+        .maybeSingle();
 
-    if (!response.ok) {
-        throw new Error(await response.text());
+    if (error) {
+        throw error;
     }
 
-    const updated = await response.json();
-    return updated[0] || Object.assign({}, record, payload);
+    return updated || Object.assign({}, record, payload);
 }
 
 async function updateApplicationStatus(nextStatus, sendEmail) {
@@ -248,10 +257,12 @@ function renderApplications() {
 
     const typeFilter = document.querySelector('[data-filter-type]').value;
     const statusFilter = document.querySelector('[data-filter-status]').value;
+    const searchFilter = document.querySelector('[data-filter-search]').value.trim().toLowerCase();
     const filtered = state.applications.filter(function (record) {
         const typeMatches = !typeFilter || record.application_type === typeFilter;
         const statusMatches = !statusFilter || normalizeAdminStatus(record.status) === statusFilter;
-        return typeMatches && statusMatches;
+        const searchMatches = !searchFilter || getSearchText(record).includes(searchFilter);
+        return typeMatches && statusMatches && searchMatches;
     });
 
     if (!filtered.length) {
@@ -274,6 +285,21 @@ function renderApplications() {
             </tr>
         `;
     }).join('');
+}
+
+function getSearchText(record) {
+    const data = record.data || {};
+
+    return [
+        record.application_id,
+        record.application_type,
+        record.status,
+        data.applicant_name,
+        data.applicant_email,
+        data.project_name,
+        data.phone,
+        data.country
+    ].join(' ').toLowerCase();
 }
 
 function renderApplicationDetails(record) {
@@ -364,14 +390,6 @@ async function sendStatusEmail(record, nextStatus, notes) {
     }
 }
 
-function getSupabaseHeaders() {
-    return {
-        apikey: supabaseConfig.anonKey,
-        Authorization: `Bearer ${supabaseConfig.anonKey}`,
-        'Content-Type': 'application/json'
-    };
-}
-
 function isAdminAuthenticated() {
     try {
         const session = JSON.parse(localStorage.getItem(adminConfig.sessionKey) || '{}');
@@ -411,6 +429,7 @@ function formatApplicationType(value) {
     const labels = {
         'Founder Partnership': 'Founder',
         'Technology Builder': 'Technology Builder',
+        'Collaborator': 'Partner / Collaborator',
         'Strategic Partnership': 'Partner / Collaborator'
     };
 

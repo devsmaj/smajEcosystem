@@ -30,7 +30,7 @@
             <div>
                 <span class="application-kicker">Applications</span>
                 <h1>Admin Dashboard</h1>
-                <p>Review founder, builder, and partner applications from the Supabase applications table.</p>
+                <p>Review founder, builder, and collaborator applications from the Supabase application table.</p>
             </div>
             <button type="button" class="btn btn-accent" data-admin-refresh>
                 <i class="bx bx-refresh"></i>
@@ -57,12 +57,16 @@
 
             <div class="admin-filters">
                 <div class="form-group">
+                    <label for="searchFilter">Search Applicants</label>
+                    <input id="searchFilter" type="search" placeholder="Name, email, ID, project..." data-filter-search>
+                </div>
+                <div class="form-group">
                     <label for="typeFilter">Application Type</label>
                     <select id="typeFilter" data-filter-type>
                         <option value="">All types</option>
                         <option value="Founder Partnership">Founder</option>
                         <option value="Technology Builder">Technology Builder</option>
-                        <option value="Strategic Partnership">Partner / Collaborator</option>
+                        <option value="Collaborator">Partner / Collaborator</option>
                     </select>
                 </div>
                 <div class="form-group">

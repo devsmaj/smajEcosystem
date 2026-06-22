@@ -1,20 +1,25 @@
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { smajEnv } from "./env.js";
+
 const supabaseConfig = {
-    url: "https://fqfcxitcnseyrunglkqy.supabase.co",
-    anonKey: "sb_publishable_SA3t6uGPtSDPofYVa1XGVQ_qOaVZn7Y",
-    bucket: "applicatoins",
-    table: "applications"
+    url: smajEnv.SUPABASE_URL,
+    publishableKey: smajEnv.SUPABASE_PUBLISHABLE_KEY,
+    bucket: smajEnv.SUPABASE_STORAGE_BUCKET,
+    table: smajEnv.SUPABASE_APPLICATION_TABLE
 };
 
 const emailJsConfig = {
-    publicKey: "8P_4KsqS5t0soM0gX",
-    serviceId: "service_32losmn",
-    adminTemplateId: "template_onw8b66",
-    userTemplateId: "template_5h069ek",
-    adminEmail: "contact@smaj.org"
+    publicKey: smajEnv.EMAILJS_PUBLIC_KEY,
+    serviceId: smajEnv.EMAILJS_SERVICE_ID,
+    adminTemplateId: smajEnv.EMAILJS_ADMIN_TEMPLATE_ID,
+    userTemplateId: smajEnv.EMAILJS_USER_TEMPLATE_ID,
+    adminEmail: smajEnv.SMAJ_CONTACT_EMAIL
 };
 
+const supabaseClient = createClient(supabaseConfig.url, supabaseConfig.publishableKey);
+
 const appState = {
-    supabaseReady: Boolean(supabaseConfig.url && supabaseConfig.anonKey)
+    supabaseReady: Boolean(supabaseConfig.url && supabaseConfig.publishableKey)
 };
 
 const applicationStatusSteps = [
@@ -72,7 +77,7 @@ async function handleApplicationSubmit(form) {
         edit_token: editToken,
         application_type: applicationType,
         edit_link: editLink,
-        status: 'submitted',
+        status: 'pending',
         submitted_at: submittedAt,
         updated_at: submittedAt,
         data: payload,
@@ -247,26 +252,17 @@ async function uploadApplicationFiles(applicationId, applicationType, files) {
 
     for (const item of files) {
         const storagePath = `applications/${folder}/${applicationId}/${Date.now()}-${sanitizeFileName(item.file.name)}`;
-        const uploadUrl = `${supabaseConfig.url}/storage/v1/object/${encodeURIComponent(supabaseConfig.bucket)}/${storagePath}`;
-
-        const response = await withTimeout(
-            fetch(uploadUrl, {
-                method: 'POST',
-                headers: {
-                    apikey: supabaseConfig.anonKey,
-                    Authorization: `Bearer ${supabaseConfig.anonKey}`,
-                    'Content-Type': item.file.type || 'application/octet-stream',
-                    'x-upsert': 'false'
-                },
-                body: item.file
+        const uploadResult = await withTimeout(
+            supabaseClient.storage.from(supabaseConfig.bucket).upload(storagePath, item.file, {
+                contentType: item.file.type || 'application/octet-stream',
+                upsert: false
             }),
             30000,
             `Upload timed out for ${item.file.name}. Try a smaller file or check Supabase Storage rules.`
         );
 
-        if (!response.ok) {
-            const uploadError = await parseSupabaseError(response);
-            throw new Error(uploadError || `Upload failed for ${item.file.name}.`);
+        if (uploadResult.error) {
+            throw new Error(parseSupabaseClientError(uploadResult.error) || `Upload failed for ${item.file.name}.`);
         }
 
         uploaded.push({
@@ -300,24 +296,14 @@ async function saveApplicationRecord(applicationId, record) {
         files: record.files
     };
 
-    const response = await withTimeout(
-        fetch(`${supabaseConfig.url}/rest/v1/${supabaseConfig.table}`, {
-            method: 'POST',
-            headers: {
-                apikey: supabaseConfig.anonKey,
-                Authorization: `Bearer ${supabaseConfig.anonKey}`,
-                'Content-Type': 'application/json',
-                Prefer: 'return=minimal'
-            },
-            body: JSON.stringify(row)
-        }),
+    const saveResult = await withTimeout(
+        supabaseClient.from(supabaseConfig.table).insert(row),
         20000,
         'Saving application timed out. Please check Supabase table policies and try again.'
     );
 
-    if (!response.ok) {
-        const saveError = await parseSupabaseError(response);
-        throw new Error(saveError || 'Could not save application in Supabase database.');
+    if (saveResult.error) {
+        throw new Error(parseSupabaseClientError(saveResult.error) || 'Could not save application in Supabase database.');
     }
 }
 
@@ -411,6 +397,7 @@ function getApplicationFolder(applicationType) {
     const folders = {
         'Founder Partnership': 'founders',
         'Technology Builder': 'builders',
+        'Collaborator': 'collaborators',
         'Strategic Partnership': 'partners'
     };
 
@@ -456,13 +443,29 @@ async function parseSupabaseError(response) {
         }
 
         if (/row-level security/i.test(error.message || error.error || text)) {
-            return 'Supabase database insert is blocked by Row Level Security. Add an anon insert policy for the applications table.';
+            return 'Supabase database insert is blocked by Row Level Security. Add an anon insert policy for the application table.';
         }
 
         return error.message || error.error || text;
     } catch (parseError) {
         return text;
     }
+}
+
+function parseSupabaseClientError(error) {
+    const message = error && (error.message || error.error_description || error.details || error.hint);
+
+    if (!message) return '';
+
+    if (message === 'Bucket not found') {
+        return `Supabase bucket "${supabaseConfig.bucket}" was not found. Create this Storage bucket in Supabase first.`;
+    }
+
+    if (/row-level security/i.test(message)) {
+        return `Supabase ${supabaseConfig.table} insert is blocked by Row Level Security. Add an anon insert policy for the application table.`;
+    }
+
+    return message;
 }
 
 function withTimeout(promise, timeoutMs, message) {
@@ -530,7 +533,7 @@ function createEmailTemplateParams(record) {
         availability: data.availability || '',
         application_type: record.application_type || '',
         application_id: record.application_id || '',
-        application_status: record.status || 'submitted',
+        application_status: record.status || 'pending',
         submitted_at: record.submitted_at || '',
         edit_link: record.edit_link || ''
     };
@@ -716,7 +719,7 @@ function getCompletedStepCount(status) {
 function normalizeApplicationStatus(status) {
     return ['pending', 'submitted', 'under_review', 'interview', 'accepted', 'rejected'].includes(status)
         ? status
-        : 'submitted';
+        : 'pending';
 }
 
 function formatStatus(status) {

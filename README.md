@@ -121,7 +121,9 @@ The application pages are ready for a GitHub Pages + Supabase setup:
 
 The shared script is `assets/js/application-form.js`.
 
-The application script is configured for Supabase and EmailJS. For production, keep Supabase Row Level Security and Storage policies strict, and use the EmailJS templates listed below.
+The application script is configured for Supabase and EmailJS. It saves to the existing Supabase table named `application` and defaults new rows to `pending`. For production, keep Supabase Row Level Security and Storage policies strict, and use the EmailJS templates listed below.
+
+Runtime configuration lives in `assets/js/env.js`. Static deployments can override it before module scripts load by setting `window.SMAJ_ENV` with `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_APPLICATION_TABLE`. Keep only publishable/anon keys in browser code; never place secret keys in this config.
 
 EmailJS templates must use these exact variables:
 
@@ -156,6 +158,6 @@ Static admin MVP pages are available at:
 - `/admin.html`
 - `/application-details.html?id=SMAJ-BLD-2026-0001`
 
-The admin UI uses the existing Supabase anon key and a client-side password gate for MVP review workflows. The default MVP password is `SMAJ-Admin-2026`; change the SHA-256 hash in `assets/js/admin.js` before production. Do not expose a Supabase `service_role` key in browser code.
+The admin UI uses the Supabase browser client, the existing publishable key, and a client-side password gate for MVP review workflows. The default MVP password is `SMAJ-Admin-2026`; change the SHA-256 hash in `assets/js/admin.js` before production. Do not expose a Supabase `service_role` key in browser code.
 
 For live Supabase reads and updates, configure authenticated admin RLS policies. See `supabase-applications-policies.sql` for the recommended policy shape.

@@ -1,0 +1,11 @@
+export const smajEnv = {
+    SUPABASE_URL: window.SMAJ_ENV?.SUPABASE_URL || "https://fqfcxitcnseyrunglkqy.supabase.co",
+    SUPABASE_PUBLISHABLE_KEY: window.SMAJ_ENV?.SUPABASE_PUBLISHABLE_KEY || "sb_publishable_SA3t6uGPtSDPofYVa1XGVQ_qOaVZn7Y",
+    SUPABASE_APPLICATION_TABLE: window.SMAJ_ENV?.SUPABASE_APPLICATION_TABLE || "application",
+    SUPABASE_STORAGE_BUCKET: window.SMAJ_ENV?.SUPABASE_STORAGE_BUCKET || "applicatoins",
+    EMAILJS_PUBLIC_KEY: window.SMAJ_ENV?.EMAILJS_PUBLIC_KEY || "8P_4KsqS5t0soM0gX",
+    EMAILJS_SERVICE_ID: window.SMAJ_ENV?.EMAILJS_SERVICE_ID || "service_32losmn",
+    EMAILJS_ADMIN_TEMPLATE_ID: window.SMAJ_ENV?.EMAILJS_ADMIN_TEMPLATE_ID || "template_onw8b66",
+    EMAILJS_USER_TEMPLATE_ID: window.SMAJ_ENV?.EMAILJS_USER_TEMPLATE_ID || "template_5h069ek",
+    SMAJ_CONTACT_EMAIL: window.SMAJ_ENV?.SMAJ_CONTACT_EMAIL || "contact@smaj.org"
+};
