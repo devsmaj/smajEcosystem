@@ -18,12 +18,14 @@ const supabaseClient = createClient(supabaseConfig.url, supabaseConfig.publishab
 
 const adminConfig = {
     sessionKey: "smajAdminSession",
-    passwordHash: "6681f90ebc88a3b2a18848146be2741244869e37f7dfdb5ae02f838e4e035758"
+    passwordHash: "6681f90ebc88a3b2a18848146be2741244869e37f7dfdb5ae02f838e4e035758",
+    sessionDurationMs: 8 * 60 * 60 * 1000
 };
 
 const state = {
     applications: [],
-    currentApplication: null
+    currentApplication: null,
+    filteredApplications: []
 };
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -56,10 +58,7 @@ function initAdminLogin() {
             return;
         }
 
-        localStorage.setItem(adminConfig.sessionKey, JSON.stringify({
-            authenticated: true,
-            logged_in_at: new Date().toISOString()
-        }));
+        saveAdminSession();
         window.location.href = '/admin.html';
     });
 }
@@ -90,9 +89,12 @@ function initDashboard() {
     if (document.body.dataset.adminPage !== 'dashboard') return;
 
     document.querySelector('[data-admin-refresh]')?.addEventListener('click', loadApplications);
+    document.querySelector('[data-admin-export]')?.addEventListener('click', exportFilteredApplications);
+    document.querySelector('[data-filter-reset]')?.addEventListener('click', resetFilters);
     document.querySelector('[data-filter-search]')?.addEventListener('input', renderApplications);
     document.querySelector('[data-filter-type]')?.addEventListener('change', renderApplications);
     document.querySelector('[data-filter-status]')?.addEventListener('change', renderApplications);
+    document.querySelector('[data-applications-list]')?.addEventListener('click', handleApplicationListClick);
 
     loadApplications();
 }
@@ -109,6 +111,11 @@ function initDetailsPage() {
     });
 
     document.querySelector('[data-save-notes]')?.addEventListener('click', async function () {
+        const status = normalizeAdminStatus(state.currentApplication?.status);
+        await updateApplicationStatus(status, false);
+    });
+
+    document.querySelector('[data-save-status]')?.addEventListener('click', async function () {
         const status = document.querySelector('[data-detail-status]').value;
         await updateApplicationStatus(status, false);
     });
@@ -158,14 +165,15 @@ async function loadApplicationDetails() {
 async function fetchApplications() {
     const { data, error } = await supabaseClient
         .from(supabaseConfig.table)
-        .select('*')
-        .order('submitted_at', { ascending: false });
+        .select('*');
 
     if (error) {
         throw error;
     }
 
-    return data || [];
+    return (data || []).sort(function (a, b) {
+        return getRecordTime(b) - getRecordTime(a);
+    });
 }
 
 async function fetchApplication(applicationId) {
@@ -190,11 +198,11 @@ async function fetchApplication(applicationId) {
 async function patchApplication(record, nextStatus, notes) {
     const data = Object.assign({}, record.data || {}, {
         admin_notes: notes,
-        admin_updated_at: new Date().toISOString()
+        admin_updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
     });
     const payload = {
         status: nextStatus,
-        updated_at: new Date().toISOString(),
         data
     };
     const { data: updated, error } = await supabaseClient
@@ -216,8 +224,16 @@ async function updateApplicationStatus(nextStatus, sendEmail) {
 
     const status = document.querySelector('[data-admin-status]');
     const notes = document.querySelector('[data-admin-notes]').value.trim();
+    const actionButton = document.querySelector(`[data-status-action="${nextStatus}"]`) || document.querySelector('[data-save-status]');
+
+    if (['accepted', 'rejected'].includes(nextStatus) && sendEmail) {
+        const applicantName = state.currentApplication.data?.applicant_name || state.currentApplication.application_id;
+        const confirmed = window.confirm(`Confirm ${formatStatus(nextStatus)} for ${applicantName}? This will send an email notification.`);
+        if (!confirmed) return;
+    }
 
     setStatus(status, 'Updating application...', 'info');
+    setButtonLoading(actionButton, true);
 
     try {
         state.currentApplication = await patchApplication(state.currentApplication, nextStatus, notes);
@@ -232,6 +248,51 @@ async function updateApplicationStatus(nextStatus, sendEmail) {
     } catch (error) {
         console.error(error);
         setStatus(status, getAdminErrorMessage(error), 'error');
+    } finally {
+        setButtonLoading(actionButton, false);
+    }
+}
+
+async function updateApplicationFromList(applicationId, nextStatus, sendEmail) {
+    const status = document.querySelector('[data-admin-status]');
+    const record = state.applications.find(function (item) {
+        return item.application_id === applicationId;
+    });
+
+    if (!record) return;
+
+    const actionButton = document.querySelector(`[data-row-status-action="${nextStatus}"][data-application-id="${cssEscape(applicationId)}"]`);
+
+    if (['accepted', 'rejected'].includes(nextStatus) && sendEmail) {
+        const applicantName = record.data?.applicant_name || record.application_id;
+        const confirmed = window.confirm(`Confirm ${formatStatus(nextStatus)} for ${applicantName}? This will send an email notification.`);
+        if (!confirmed) return;
+    }
+
+    setStatus(status, 'Updating application...', 'info');
+    setButtonLoading(actionButton, true);
+
+    try {
+        const updated = await patchApplication(record, nextStatus, record.data?.admin_notes || '');
+        const index = state.applications.findIndex(function (item) {
+            return item.application_id === applicationId;
+        });
+        if (index >= 0) state.applications[index] = updated;
+
+        if (sendEmail && ['interview', 'accepted', 'rejected'].includes(nextStatus)) {
+            await sendStatusEmail(updated, nextStatus, updated.data?.admin_notes || '');
+            setStatus(status, `Application updated to ${formatStatus(nextStatus)} and email notification sent.`, 'success');
+        } else {
+            setStatus(status, `Application updated to ${formatStatus(nextStatus)}.`, 'success');
+        }
+
+        renderCounts();
+        renderApplications();
+    } catch (error) {
+        console.error(error);
+        setStatus(status, getAdminErrorMessage(error), 'error');
+    } finally {
+        setButtonLoading(actionButton, false);
     }
 }
 
@@ -264,6 +325,8 @@ function renderApplications() {
         const searchMatches = !searchFilter || getSearchText(record).includes(searchFilter);
         return typeMatches && statusMatches && searchMatches;
     });
+    state.filteredApplications = filtered;
+    setText('[data-visible-count]', filtered.length);
 
     if (!filtered.length) {
         list.innerHTML = '<tr><td colspan="6">No applications match these filters.</td></tr>';
@@ -280,11 +343,77 @@ function renderApplications() {
                 <td>${escapeHtml(name)}<span>${escapeHtml(data.applicant_email || '')}</span></td>
                 <td>${escapeHtml(formatApplicationType(record.application_type))}</td>
                 <td><span class="admin-status-pill admin-status-${normalizeAdminStatus(record.status)}">${formatStatus(record.status)}</span></td>
-                <td>${escapeHtml(formatDate(record.submitted_at))}</td>
-                <td><a class="btn btn-outline admin-table-action" href="/application-details.html?id=${encodeURIComponent(record.application_id)}">View</a></td>
+                <td>${escapeHtml(formatDate(getSubmittedAt(record)))}</td>
+                <td>
+                    <div class="admin-row-actions">
+                        <a class="btn btn-outline admin-table-action" href="/application-details.html?id=${encodeURIComponent(record.application_id)}">View</a>
+                        <button type="button" class="btn btn-outline admin-table-action" data-row-status-action="pending" data-application-id="${escapeAttribute(record.application_id)}">Pending</button>
+                        <button type="button" class="btn btn-outline admin-table-action" data-row-status-action="interview" data-application-id="${escapeAttribute(record.application_id)}">Interview</button>
+                        <button type="button" class="btn btn-outline admin-table-action" data-row-status-action="accepted" data-application-id="${escapeAttribute(record.application_id)}">Accept</button>
+                        <button type="button" class="btn btn-outline admin-table-action admin-danger" data-row-status-action="rejected" data-application-id="${escapeAttribute(record.application_id)}">Reject</button>
+                    </div>
+                </td>
             </tr>
         `;
     }).join('');
+}
+
+function handleApplicationListClick(event) {
+    const button = event.target.closest('[data-row-status-action]');
+
+    if (!button) return;
+
+    updateApplicationFromList(button.dataset.applicationId, button.dataset.rowStatusAction, true);
+}
+
+function resetFilters() {
+    const search = document.querySelector('[data-filter-search]');
+    const type = document.querySelector('[data-filter-type]');
+    const status = document.querySelector('[data-filter-status]');
+
+    if (search) search.value = '';
+    if (type) type.value = '';
+    if (status) status.value = '';
+    renderApplications();
+}
+
+function exportFilteredApplications() {
+    const rows = state.filteredApplications.length ? state.filteredApplications : state.applications;
+    const status = document.querySelector('[data-admin-status]');
+
+    if (!rows.length) {
+        setStatus(status, 'No applications to export.', 'info');
+        return;
+    }
+
+    const headers = ['Application ID', 'Name', 'Email', 'Phone', 'Country', 'Type', 'Status', 'Submitted'];
+    const csvRows = [headers].concat(rows.map(function (record) {
+        const data = record.data || {};
+
+        return [
+            record.application_id || '',
+            data.applicant_name || data.project_name || '',
+            data.applicant_email || '',
+            data.phone || '',
+            data.country || '',
+            formatApplicationType(record.application_type),
+            formatStatus(record.status),
+            formatDate(getSubmittedAt(record))
+        ];
+    }));
+    const csv = csvRows.map(function (row) {
+        return row.map(csvCell).join(',');
+    }).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `smaj-applications-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setStatus(status, `Exported ${rows.length} applications.`, 'success');
 }
 
 function getSearchText(record) {
@@ -321,8 +450,8 @@ function renderApplicationDetails(record) {
         ['Application ID', record.application_id],
         ['Status', formatStatus(record.status)],
         ['Application Type', formatApplicationType(record.application_type)],
-        ['Submitted', formatDate(record.submitted_at)],
-        ['Updated', formatDate(record.updated_at)]
+        ['Submitted', formatDate(getSubmittedAt(record))],
+        ['Updated', formatDate(getUpdatedAt(record))]
     ];
 
     const dataFields = Object.entries(data)
@@ -393,10 +522,27 @@ async function sendStatusEmail(record, nextStatus, notes) {
 function isAdminAuthenticated() {
     try {
         const session = JSON.parse(localStorage.getItem(adminConfig.sessionKey) || '{}');
-        return Boolean(session.authenticated);
+        if (!session.authenticated || !session.expires_at) return false;
+
+        if (Date.now() > new Date(session.expires_at).getTime()) {
+            localStorage.removeItem(adminConfig.sessionKey);
+            return false;
+        }
+
+        return true;
     } catch (error) {
         return false;
     }
+}
+
+function saveAdminSession() {
+    const now = Date.now();
+
+    localStorage.setItem(adminConfig.sessionKey, JSON.stringify({
+        authenticated: true,
+        logged_in_at: new Date(now).toISOString(),
+        expires_at: new Date(now + adminConfig.sessionDurationMs).toISOString()
+    }));
 }
 
 async function sha256(value) {
@@ -461,6 +607,20 @@ function formatDate(value) {
     }
 }
 
+function getSubmittedAt(record) {
+    return record.submitted_at || record.created_at || record.data?.submitted_at || record.data?.created_at || '';
+}
+
+function getUpdatedAt(record) {
+    return record.updated_at || record.data?.updated_at || record.data?.admin_updated_at || record.created_at || '';
+}
+
+function getRecordTime(record) {
+    const value = getSubmittedAt(record);
+    const time = value ? new Date(value).getTime() : 0;
+    return Number.isFinite(time) ? time : 0;
+}
+
 function setStatus(element, message, type) {
     if (!element) return;
     element.textContent = message;
@@ -470,6 +630,17 @@ function setStatus(element, message, type) {
 function setText(selector, value) {
     const element = document.querySelector(selector);
     if (element) element.textContent = value;
+}
+
+function setButtonLoading(button, isLoading) {
+    if (!button) return;
+
+    if (!button.dataset.defaultText) {
+        button.dataset.defaultText = button.textContent;
+    }
+
+    button.disabled = isLoading;
+    button.textContent = isLoading ? 'Working...' : button.dataset.defaultText;
 }
 
 function getAdminErrorMessage(error) {
@@ -493,4 +664,22 @@ function escapeHtml(value) {
 
 function escapeAttribute(value) {
     return escapeHtml(value).replace(/`/g, '&#096;');
+}
+
+function cssEscape(value) {
+    if (window.CSS && typeof window.CSS.escape === 'function') {
+        return window.CSS.escape(value);
+    }
+
+    return String(value || '').replace(/"/g, '\\"');
+}
+
+function csvCell(value) {
+    const text = String(value || '');
+
+    if (/[",\n]/.test(text)) {
+        return `"${text.replace(/"/g, '""')}"`;
+    }
+
+    return text;
 }

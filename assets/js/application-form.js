@@ -290,9 +290,10 @@ async function saveApplicationRecord(applicationId, record) {
         edit_token: record.edit_token,
         edit_link: record.edit_link,
         status: record.status,
-        submitted_at: record.submitted_at,
-        updated_at: record.updated_at,
-        data: record.data,
+        data: Object.assign({}, record.data, {
+            submitted_at: record.submitted_at,
+            updated_at: record.updated_at
+        }),
         files: record.files
     };
 
