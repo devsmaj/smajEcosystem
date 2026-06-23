@@ -22,6 +22,8 @@ const appState = {
     supabaseReady: Boolean(supabaseConfig.url && supabaseConfig.publishableKey)
 };
 
+const applicationRealtimeChannels = new Map();
+
 const applicationStatusSteps = [
     { status: 'submitted', label: 'Application Submitted' },
     { status: 'under_review', label: 'Application Review' },
@@ -44,6 +46,8 @@ function initApplicationForms() {
 
         if (savedRecord) {
             showApplicationDashboard(form, savedRecord, false);
+            refreshApplicationDashboard(form, savedRecord);
+            subscribeToApplicationUpdates(form, savedRecord.application_id);
             return;
         }
 
@@ -110,6 +114,7 @@ async function handleApplicationSubmit(form) {
 
         setStatus(status, 'Application submitted successfully.', 'success');
         showApplicationDashboard(form, record, true);
+        subscribeToApplicationUpdates(form, record.application_id);
         return;
     } catch (error) {
         console.error(error);
@@ -610,6 +615,78 @@ function showApplicationDashboard(form, record, isFreshSubmission) {
     }
 }
 
+async function refreshApplicationDashboard(form, fallbackRecord) {
+    if (!fallbackRecord || !fallbackRecord.application_id) return;
+
+    try {
+        const latestRecord = await fetchApplicationRecord(fallbackRecord.application_id);
+
+        if (!latestRecord) return;
+
+        showApplicationDashboard(form, mergeApplicationRecords(fallbackRecord, latestRecord), false);
+    } catch (error) {
+        console.warn('Could not refresh application status:', error);
+    }
+}
+
+async function fetchApplicationRecord(applicationId) {
+    const { data, error } = await supabaseClient
+        .from(supabaseConfig.table)
+        .select('*')
+        .eq('application_id', applicationId)
+        .limit(1)
+        .maybeSingle();
+
+    if (error) throw error;
+
+    return data;
+}
+
+function subscribeToApplicationUpdates(form, applicationId) {
+    if (!applicationId || applicationRealtimeChannels.has(applicationId)) return;
+
+    const channel = supabaseClient
+        .channel(`application-status-${applicationId}`)
+        .on(
+            'postgres_changes',
+            {
+                event: '*',
+                schema: 'public',
+                table: supabaseConfig.table,
+                filter: `application_id=eq.${applicationId}`
+            },
+            function (payload) {
+                const currentRecord = getSavedApplicationForForm(form);
+                const nextRecord = payload.new
+                    ? mergeApplicationRecords(currentRecord, payload.new)
+                    : currentRecord;
+
+                if (nextRecord) {
+                    showApplicationDashboard(form, nextRecord, false);
+                }
+            }
+        )
+        .subscribe();
+
+    applicationRealtimeChannels.set(applicationId, channel);
+}
+
+function mergeApplicationRecords(currentRecord, databaseRecord) {
+    const current = currentRecord || {};
+    const databaseData = databaseRecord.data || {};
+    const submittedAt = databaseRecord.submitted_at || databaseRecord.created_at || databaseData.submitted_at || current.submitted_at;
+    const updatedAt = databaseRecord.updated_at || databaseData.updated_at || databaseData.admin_updated_at || current.updated_at || submittedAt;
+
+    return Object.assign({}, current, databaseRecord, {
+        edit_token: databaseRecord.edit_token || current.edit_token || '',
+        edit_link: databaseRecord.edit_link || current.edit_link || '',
+        submitted_at: submittedAt,
+        updated_at: updatedAt,
+        data: Object.assign({}, current.data || {}, databaseData),
+        files: Array.isArray(databaseRecord.files) ? databaseRecord.files : current.files || []
+    });
+}
+
 function createApplicationDashboardHtml(record, isFreshSubmission) {
     const status = normalizeApplicationStatus(record.status);
     const submittedDate = record.submitted_at ? formatDate(record.submitted_at) : 'Submitted';
@@ -670,6 +747,7 @@ function createProgressStepHtml(step, index, currentStatus) {
     const icons = {
         complete: '✓',
         active: '⏳',
+        rejected: '✕',
         locked: '🔒'
     };
 
@@ -682,6 +760,12 @@ function createProgressStepHtml(step, index, currentStatus) {
 }
 
 function getProgressStepState(index, currentStatus) {
+    if (currentStatus === 'rejected') {
+        if (index < 2) return 'complete';
+        if (index === 3) return 'rejected';
+        return 'locked';
+    }
+
     const progressCount = getProgressCount(currentStatus);
 
     if (index + 1 < progressCount) return 'complete';

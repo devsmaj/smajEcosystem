@@ -25,7 +25,10 @@ const adminConfig = {
 const state = {
     applications: [],
     currentApplication: null,
-    filteredApplications: []
+    filteredApplications: [],
+    realtimeChannel: null,
+    detailRealtimeChannel: null,
+    refreshTimer: null
 };
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -97,12 +100,14 @@ function initDashboard() {
     document.querySelector('[data-applications-list]')?.addEventListener('click', handleApplicationListClick);
 
     loadApplications();
+    subscribeToAdminRealtime();
 }
 
 function initDetailsPage() {
     if (document.body.dataset.adminPage !== 'details') return;
 
     loadApplicationDetails();
+    subscribeToDetailRealtime();
 
     document.querySelectorAll('[data-status-action]').forEach(function (button) {
         button.addEventListener('click', async function () {
@@ -141,6 +146,32 @@ async function loadApplications() {
     }
 }
 
+function subscribeToAdminRealtime() {
+    if (state.realtimeChannel) return;
+
+    state.realtimeChannel = supabaseClient
+        .channel('admin-application-realtime')
+        .on(
+            'postgres_changes',
+            {
+                event: '*',
+                schema: 'public',
+                table: supabaseConfig.table
+            },
+            function () {
+                scheduleApplicationsRefresh();
+            }
+        )
+        .subscribe();
+}
+
+function scheduleApplicationsRefresh() {
+    window.clearTimeout(state.refreshTimer);
+    state.refreshTimer = window.setTimeout(function () {
+        loadApplications();
+    }, 350);
+}
+
 async function loadApplicationDetails() {
     const status = document.querySelector('[data-admin-status]');
     const applicationId = new URLSearchParams(window.location.search).get('id');
@@ -160,6 +191,32 @@ async function loadApplicationDetails() {
         console.error(error);
         setStatus(status, getAdminErrorMessage(error), 'error');
     }
+}
+
+function subscribeToDetailRealtime() {
+    const applicationId = new URLSearchParams(window.location.search).get('id');
+
+    if (!applicationId || state.detailRealtimeChannel) return;
+
+    state.detailRealtimeChannel = supabaseClient
+        .channel(`admin-application-detail-${applicationId}`)
+        .on(
+            'postgres_changes',
+            {
+                event: '*',
+                schema: 'public',
+                table: supabaseConfig.table,
+                filter: `application_id=eq.${applicationId}`
+            },
+            function (payload) {
+                if (payload.new) {
+                    state.currentApplication = payload.new;
+                    renderApplicationDetails(state.currentApplication);
+                    setStatus(document.querySelector('[data-admin-status]'), 'Application updated in realtime.', 'success');
+                }
+            }
+        )
+        .subscribe();
 }
 
 async function fetchApplications() {

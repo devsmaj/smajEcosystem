@@ -1377,7 +1377,8 @@ section {
 }
 
 .application-progress-complete,
-.application-progress-active {
+.application-progress-active,
+.application-progress-rejected {
     color: var(--secondary-color);
 }
 
@@ -1395,6 +1396,12 @@ section {
 
 .application-progress-locked .application-progress-icon {
     color: #98a2b3;
+}
+
+.application-progress-rejected .application-progress-icon {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
 }
 
 .application-support-card {
