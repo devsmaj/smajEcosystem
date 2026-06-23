@@ -13,7 +13,6 @@ create table if not exists public.admin_users (
     email text not null unique,
     full_name text,
     role text not null default 'admin' check (role in ('owner', 'admin', 'reviewer')),
-    is_active boolean not null default true,
     created_at timestamptz not null default now()
 );
 
@@ -46,7 +45,6 @@ as $$
         select 1
         from public.admin_users
         where user_id = auth.uid()
-          and is_active = true
     );
 $$;
 

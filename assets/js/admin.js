@@ -44,8 +44,10 @@ function initAdminLogin() {
 
     if (!form) return;
 
+    cleanAdminLoginUrl();
+
     if (await isAdminAuthenticated()) {
-        window.location.href = '/admin.html';
+        window.location.replace(adminConfig.dashboardPath);
         return;
     }
 
@@ -73,7 +75,8 @@ function initAdminLogin() {
                 return;
             }
 
-            window.location.href = adminConfig.dashboardPath;
+            cleanAdminLoginUrl();
+            window.location.replace(adminConfig.dashboardPath);
         } catch (error) {
             console.error(error);
             setStatus(status, getAdminErrorMessage(error), 'error');
@@ -87,7 +90,7 @@ function initAdminLogout() {
     document.querySelectorAll('[data-admin-logout]').forEach(function (button) {
         button.addEventListener('click', async function () {
             await supabaseClient.auth.signOut();
-            window.location.href = adminConfig.loginPath;
+            window.location.replace(adminConfig.loginPath);
         });
     });
 }
@@ -98,7 +101,7 @@ async function guardAdminPages() {
     if (!adminPage) return true;
 
     if (!(await isAdminAuthenticated())) {
-        window.location.href = adminConfig.loginPath;
+        window.location.replace(adminConfig.loginPath);
         return false;
     }
 
@@ -687,9 +690,8 @@ async function fetchCurrentAdminUser() {
     const user = sessionData.session.user;
     const { data, error } = await supabaseClient
         .from('admin_users')
-        .select('id, user_id, email, role, full_name, is_active')
+        .select('id, user_id, email, role, full_name, created_at')
         .eq('user_id', user.id)
-        .eq('is_active', true)
         .maybeSingle();
 
     if (error) {
@@ -698,6 +700,12 @@ async function fetchCurrentAdminUser() {
     }
 
     return data;
+}
+
+function cleanAdminLoginUrl() {
+    if (!window.location.search && !window.location.hash) return;
+
+    window.history.replaceState({}, document.title, window.location.pathname);
 }
 
 function normalizeAdminStatus(status) {
