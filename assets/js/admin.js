@@ -53,6 +53,7 @@ function initAdminLogin() {
 
     form.addEventListener('submit', async function (event) {
         event.preventDefault();
+        event.stopPropagation();
 
         const status = document.querySelector('[data-admin-login-status]');
         const formData = new FormData(form);
@@ -83,6 +84,8 @@ function initAdminLogin() {
         } finally {
             setButtonLoading(submitButton, false);
         }
+
+        return false;
     });
 }
 
