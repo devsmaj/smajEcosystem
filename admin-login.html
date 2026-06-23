@@ -24,14 +24,19 @@
             <h1>Review applications professionally.</h1>
             <p>Sign in with an approved SMAJ admin account to review applications, interviews, decisions, and admin notes.</p>
 
-            <form action="#" data-admin-login-form>
+            <form action="javascript:void(0)" data-admin-login-form novalidate>
                 <div class="form-group">
                     <label for="adminEmail">Admin Email</label>
                     <input id="adminEmail" name="adminEmail" type="email" autocomplete="username" required>
                 </div>
                 <div class="form-group">
                     <label for="adminPassword">Password</label>
-                    <input id="adminPassword" name="adminPassword" type="password" autocomplete="current-password" required>
+                    <div class="password-field">
+                        <input id="adminPassword" name="adminPassword" type="password" autocomplete="current-password" required>
+                        <button class="password-toggle" type="button" data-password-toggle aria-label="Show password" aria-pressed="false">
+                            <i class="bx bx-hide" aria-hidden="true"></i>
+                        </button>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary">Login</button>
                 <p class="application-status" data-admin-login-status aria-live="polite"></p>

@@ -32,14 +32,15 @@ const state = {
 };
 
 document.addEventListener('DOMContentLoaded', async function () {
-    initAdminLogin();
+    initPasswordToggle();
+    await initAdminLogin();
     initAdminLogout();
     if (!(await guardAdminPages())) return;
     initDashboard();
     initDetailsPage();
 });
 
-function initAdminLogin() {
+async function initAdminLogin() {
     const form = document.querySelector('[data-admin-login-form]');
 
     if (!form) return;
@@ -61,18 +62,25 @@ function initAdminLogin() {
         const password = String(formData.get('adminPassword') || '');
         const submitButton = form.querySelector('[type="submit"]');
 
+        if (!email || !password) {
+            setStatus(status, 'Enter your admin email and password.', 'error');
+            return false;
+        }
+
         setStatus(status, 'Signing in...', 'info');
         setButtonLoading(submitButton, true);
 
         try {
-            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             if (error) throw error;
+            if (!data.user) throw new Error('Supabase did not return an authenticated user session.');
 
+            setStatus(status, 'Checking admin access...', 'info');
             const adminUser = await fetchCurrentAdminUser();
 
             if (!adminUser) {
                 await supabaseClient.auth.signOut();
-                setStatus(status, 'This account is not approved as a SMAJ admin.', 'error');
+                setStatus(status, 'Unauthorized admin. Add this Auth user ID to public.admin_users.', 'error');
                 return;
             }
 
@@ -86,6 +94,27 @@ function initAdminLogin() {
         }
 
         return false;
+    });
+}
+
+function initPasswordToggle() {
+    const input = document.querySelector('#adminPassword');
+    const button = document.querySelector('[data-password-toggle]');
+
+    if (!input || !button) return;
+
+    button.addEventListener('click', function () {
+        const shouldShow = input.type === 'password';
+        input.type = shouldShow ? 'text' : 'password';
+        button.setAttribute('aria-label', shouldShow ? 'Hide password' : 'Show password');
+        button.setAttribute('aria-pressed', String(shouldShow));
+
+        const icon = button.querySelector('i');
+        if (icon) {
+            icon.className = shouldShow ? 'bx bx-show' : 'bx bx-hide';
+        }
+
+        input.focus();
     });
 }
 

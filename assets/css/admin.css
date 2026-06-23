@@ -62,6 +62,39 @@
     margin-top: 26px;
 }
 
+.password-field {
+    position: relative;
+}
+
+.password-field input {
+    padding-right: 52px;
+}
+
+.password-toggle {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: inline-flex;
+    font-size: 22px;
+    height: 42px;
+    justify-content: center;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: color 0.2s ease, background 0.2s ease;
+    width: 42px;
+}
+
+.password-toggle:hover,
+.password-toggle:focus-visible {
+    background: rgba(16, 24, 39, 0.06);
+    color: var(--secondary-color);
+    outline: none;
+}
+
 .admin-topbar {
     align-items: center;
     background: rgba(255, 255, 255, 0.96);
