@@ -23,6 +23,7 @@ const appState = {
 };
 
 const applicationRealtimeChannels = new Map();
+const applicationStatusPollers = new Map();
 
 const applicationStatusSteps = [
     { status: 'submitted', label: 'Application Submitted' },
@@ -48,6 +49,7 @@ function initApplicationForms() {
             showApplicationDashboard(form, savedRecord, false);
             refreshApplicationDashboard(form, savedRecord);
             subscribeToApplicationUpdates(form, savedRecord.application_id);
+            startApplicationStatusPolling(form, savedRecord);
             return;
         }
 
@@ -115,6 +117,7 @@ async function handleApplicationSubmit(form) {
         setStatus(status, 'Application submitted successfully.', 'success');
         showApplicationDashboard(form, record, true);
         subscribeToApplicationUpdates(form, record.application_id);
+        startApplicationStatusPolling(form, record);
         return;
     } catch (error) {
         console.error(error);
@@ -619,7 +622,7 @@ async function refreshApplicationDashboard(form, fallbackRecord) {
     if (!fallbackRecord || !fallbackRecord.application_id) return;
 
     try {
-        const latestRecord = await fetchApplicationRecord(fallbackRecord.application_id);
+        const latestRecord = await fetchApplicationRecord(fallbackRecord.application_id, fallbackRecord.edit_token);
 
         if (!latestRecord) return;
 
@@ -629,17 +632,28 @@ async function refreshApplicationDashboard(form, fallbackRecord) {
     }
 }
 
-async function fetchApplicationRecord(applicationId) {
-    const { data, error } = await supabaseClient
-        .from(supabaseConfig.table)
-        .select('*')
-        .eq('application_id', applicationId)
-        .limit(1)
-        .maybeSingle();
+async function fetchApplicationRecord(applicationId, editToken) {
+    if (!editToken) return null;
+
+    const { data, error } = await supabaseClient.rpc('get_application_status', {
+        p_application_id: applicationId,
+        p_edit_token: editToken
+    });
 
     if (error) throw error;
 
-    return data;
+    return Array.isArray(data) ? data[0] : data;
+}
+
+function startApplicationStatusPolling(form, record) {
+    if (!record || !record.application_id || applicationStatusPollers.has(record.application_id)) return;
+
+    const poller = window.setInterval(function () {
+        const latestSavedRecord = getSavedApplicationForForm(form) || record;
+        refreshApplicationDashboard(form, latestSavedRecord);
+    }, 15000);
+
+    applicationStatusPollers.set(record.application_id, poller);
 }
 
 function subscribeToApplicationUpdates(form, applicationId) {

@@ -296,6 +296,41 @@
     top: 98px;
 }
 
+.admin-audit-panel {
+    margin-top: 24px;
+}
+
+.admin-audit-list {
+    display: grid;
+    gap: 12px;
+}
+
+.admin-audit-item {
+    background: var(--light-bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    display: grid;
+    gap: 8px;
+    padding: 14px;
+}
+
+.admin-audit-item strong {
+    color: var(--secondary-color);
+    display: block;
+}
+
+.admin-audit-item span,
+.admin-audit-item time,
+.admin-audit-item p {
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.admin-audit-item p {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
 .admin-button-stack {
     display: grid;
     gap: 10px;

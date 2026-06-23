@@ -152,12 +152,18 @@ EmailJS templates must use these exact variables:
 
 ## Admin Dashboard
 
-Static admin MVP pages are available at:
+Static admin pages are available at:
 
 - `/admin-login.html`
 - `/admin.html`
 - `/application-details.html?id=SMAJ-BLD-2026-0001`
 
-The admin UI uses the Supabase browser client, the existing publishable key, and a client-side password gate for MVP review workflows. The default MVP password is `SMAJ-Admin-2026`; change the SHA-256 hash in `assets/js/admin.js` before production. Do not expose a Supabase `service_role` key in browser code.
+The admin UI uses Supabase Auth, the Supabase browser client, and the existing publishable key. Do not expose a Supabase `service_role` key in browser code.
 
-For live Supabase reads and updates, configure authenticated admin RLS policies. See `supabase-applications-policies.sql` for the recommended policy shape.
+Before using the admin dashboard:
+
+1. Run `supabase-applications-policies.sql` in the Supabase SQL Editor.
+2. Create an admin user in Supabase Auth.
+3. Insert that Auth user ID into `public.admin_users`.
+
+Admin application changes are recorded in `public.audit_logs`.

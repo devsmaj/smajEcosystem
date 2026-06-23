@@ -17,9 +17,8 @@ const emailJsConfig = {
 const supabaseClient = createClient(supabaseConfig.url, supabaseConfig.publishableKey);
 
 const adminConfig = {
-    sessionKey: "smajAdminSession",
-    passwordHash: "6681f90ebc88a3b2a18848146be2741244869e37f7dfdb5ae02f838e4e035758",
-    sessionDurationMs: 8 * 60 * 60 * 1000
+    loginPath: "/admin-login.html",
+    dashboardPath: "/admin.html"
 };
 
 const state = {
@@ -28,13 +27,14 @@ const state = {
     filteredApplications: [],
     realtimeChannel: null,
     detailRealtimeChannel: null,
-    refreshTimer: null
+    refreshTimer: null,
+    adminUser: null
 };
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     initAdminLogin();
     initAdminLogout();
-    if (!guardAdminPages()) return;
+    if (!(await guardAdminPages())) return;
     initDashboard();
     initDetailsPage();
 });
@@ -44,7 +44,7 @@ function initAdminLogin() {
 
     if (!form) return;
 
-    if (isAdminAuthenticated()) {
+    if (await isAdminAuthenticated()) {
         window.location.href = '/admin.html';
         return;
     }
@@ -53,35 +53,52 @@ function initAdminLogin() {
         event.preventDefault();
 
         const status = document.querySelector('[data-admin-login-status]');
-        const password = new FormData(form).get('adminPassword');
-        const passwordHash = await sha256(String(password || ''));
+        const formData = new FormData(form);
+        const email = String(formData.get('adminEmail') || '').trim();
+        const password = String(formData.get('adminPassword') || '');
+        const submitButton = form.querySelector('[type="submit"]');
 
-        if (passwordHash !== adminConfig.passwordHash) {
-            setStatus(status, 'Invalid admin password.', 'error');
-            return;
+        setStatus(status, 'Signing in...', 'info');
+        setButtonLoading(submitButton, true);
+
+        try {
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+
+            const adminUser = await fetchCurrentAdminUser();
+
+            if (!adminUser) {
+                await supabaseClient.auth.signOut();
+                setStatus(status, 'This account is not approved as a SMAJ admin.', 'error');
+                return;
+            }
+
+            window.location.href = adminConfig.dashboardPath;
+        } catch (error) {
+            console.error(error);
+            setStatus(status, getAdminErrorMessage(error), 'error');
+        } finally {
+            setButtonLoading(submitButton, false);
         }
-
-        saveAdminSession();
-        window.location.href = '/admin.html';
     });
 }
 
 function initAdminLogout() {
     document.querySelectorAll('[data-admin-logout]').forEach(function (button) {
-        button.addEventListener('click', function () {
-            localStorage.removeItem(adminConfig.sessionKey);
-            window.location.href = '/admin-login.html';
+        button.addEventListener('click', async function () {
+            await supabaseClient.auth.signOut();
+            window.location.href = adminConfig.loginPath;
         });
     });
 }
 
-function guardAdminPages() {
+async function guardAdminPages() {
     const adminPage = document.body.dataset.adminPage;
 
     if (!adminPage) return true;
 
-    if (!isAdminAuthenticated()) {
-        window.location.href = '/admin-login.html';
+    if (!(await isAdminAuthenticated())) {
+        window.location.href = adminConfig.loginPath;
         return false;
     }
 
@@ -186,6 +203,7 @@ async function loadApplicationDetails() {
     try {
         state.currentApplication = await fetchApplication(applicationId);
         renderApplicationDetails(state.currentApplication);
+        await loadAuditLogs(applicationId);
         setStatus(status, 'Application loaded.', 'success');
     } catch (error) {
         console.error(error);
@@ -212,6 +230,7 @@ function subscribeToDetailRealtime() {
                 if (payload.new) {
                     state.currentApplication = payload.new;
                     renderApplicationDetails(state.currentApplication);
+                    loadAuditLogs(state.currentApplication.application_id);
                     setStatus(document.querySelector('[data-admin-status]'), 'Application updated in realtime.', 'success');
                 }
             }
@@ -252,7 +271,29 @@ async function fetchApplication(applicationId) {
     return data;
 }
 
+async function loadAuditLogs(applicationId) {
+    const list = document.querySelector('[data-audit-list]');
+
+    if (!list) return;
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('audit_logs')
+            .select('id, action, old_status, new_status, notes, created_at, admin_users(email, full_name)')
+            .eq('application_id', applicationId)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        renderAuditLogs(data || []);
+    } catch (error) {
+        console.error(error);
+        list.innerHTML = `<p class="application-status" data-status="error">${escapeHtml(getAdminErrorMessage(error))}</p>`;
+    }
+}
+
 async function patchApplication(record, nextStatus, notes) {
+    const previousStatus = normalizeAdminStatus(record.status);
     const data = Object.assign({}, record.data || {}, {
         admin_notes: notes,
         admin_updated_at: new Date().toISOString(),
@@ -273,7 +314,31 @@ async function patchApplication(record, nextStatus, notes) {
         throw error;
     }
 
-    return updated || Object.assign({}, record, payload);
+    const nextRecord = updated || Object.assign({}, record, payload);
+    await writeAuditLog(record, nextRecord, previousStatus, nextStatus, notes);
+
+    return nextRecord;
+}
+
+async function writeAuditLog(previousRecord, nextRecord, previousStatus, nextStatus, notes) {
+    const auditRow = {
+        application_id: previousRecord.application_id,
+        admin_user_id: state.adminUser?.id || null,
+        admin_auth_user_id: state.adminUser?.user_id || null,
+        action: previousStatus === nextStatus ? 'notes_updated' : 'status_changed',
+        old_status: previousStatus,
+        new_status: nextStatus,
+        notes: notes || '',
+        metadata: {
+            application_type: nextRecord.application_type || previousRecord.application_type || '',
+            applicant_email: nextRecord.data?.applicant_email || previousRecord.data?.applicant_email || ''
+        }
+    };
+    const { error } = await supabaseClient.from('audit_logs').insert(auditRow);
+
+    if (error) {
+        console.warn('Audit log insert failed:', error);
+    }
 }
 
 async function updateApplicationStatus(nextStatus, sendEmail) {
@@ -295,6 +360,7 @@ async function updateApplicationStatus(nextStatus, sendEmail) {
     try {
         state.currentApplication = await patchApplication(state.currentApplication, nextStatus, notes);
         renderApplicationDetails(state.currentApplication);
+        await loadAuditLogs(state.currentApplication.application_id);
 
         if (sendEmail && ['interview', 'accepted', 'rejected'].includes(nextStatus)) {
             await sendStatusEmail(state.currentApplication, nextStatus, notes);
@@ -530,6 +596,35 @@ function renderApplicationDetails(record) {
         (fileFields.length ? `<div class="admin-detail-section-title">Uploaded Files</div>${fileFields.map(renderDetailItem).join('')}` : '');
 }
 
+function renderAuditLogs(logs) {
+    const list = document.querySelector('[data-audit-list]');
+
+    if (!list) return;
+
+    if (!logs.length) {
+        list.innerHTML = '<p class="application-status" data-status="info">No audit history yet.</p>';
+        return;
+    }
+
+    list.innerHTML = logs.map(function (log) {
+        const adminName = log.admin_users?.full_name || log.admin_users?.email || 'SMAJ Admin';
+        const statusText = log.old_status === log.new_status
+            ? formatStatus(log.new_status)
+            : `${formatStatus(log.old_status)} → ${formatStatus(log.new_status)}`;
+
+        return `
+            <article class="admin-audit-item">
+                <div>
+                    <strong>${escapeHtml(formatLabel(log.action))}</strong>
+                    <span>${escapeHtml(statusText)} by ${escapeHtml(adminName)}</span>
+                </div>
+                <time>${escapeHtml(formatDate(log.created_at))}</time>
+                ${log.notes ? `<p>${escapeHtml(log.notes)}</p>` : ''}
+            </article>
+        `;
+    }).join('');
+}
+
 function renderDetailItem(item) {
     const [label, value, isHtml] = item;
     const displayValue = value === undefined || value === null || value === '' ? 'Not provided' : value;
@@ -576,38 +671,33 @@ async function sendStatusEmail(record, nextStatus, notes) {
     }
 }
 
-function isAdminAuthenticated() {
-    try {
-        const session = JSON.parse(localStorage.getItem(adminConfig.sessionKey) || '{}');
-        if (!session.authenticated || !session.expires_at) return false;
+async function isAdminAuthenticated() {
+    const adminUser = await fetchCurrentAdminUser();
+    state.adminUser = adminUser;
+    return Boolean(adminUser);
+}
 
-        if (Date.now() > new Date(session.expires_at).getTime()) {
-            localStorage.removeItem(adminConfig.sessionKey);
-            return false;
-        }
+async function fetchCurrentAdminUser() {
+    const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
 
-        return true;
-    } catch (error) {
-        return false;
+    if (sessionError || !sessionData.session?.user) {
+        return null;
     }
-}
 
-function saveAdminSession() {
-    const now = Date.now();
+    const user = sessionData.session.user;
+    const { data, error } = await supabaseClient
+        .from('admin_users')
+        .select('id, user_id, email, role, full_name, is_active')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
 
-    localStorage.setItem(adminConfig.sessionKey, JSON.stringify({
-        authenticated: true,
-        logged_in_at: new Date(now).toISOString(),
-        expires_at: new Date(now + adminConfig.sessionDurationMs).toISOString()
-    }));
-}
+    if (error) {
+        console.error(error);
+        return null;
+    }
 
-async function sha256(value) {
-    const data = new TextEncoder().encode(value);
-    const hash = await crypto.subtle.digest('SHA-256', data);
-    return Array.from(new Uint8Array(hash)).map(function (byte) {
-        return byte.toString(16).padStart(2, '0');
-    }).join('');
+    return data;
 }
 
 function normalizeAdminStatus(status) {
