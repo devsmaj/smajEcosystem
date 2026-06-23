@@ -57,9 +57,8 @@ async function initAdminLogin() {
         event.stopPropagation();
 
         const status = document.querySelector('[data-admin-login-status]');
-        const formData = new FormData(form);
-        const email = String(formData.get('adminEmail') || '').trim();
-        const password = String(formData.get('adminPassword') || '');
+        const email = String(form.querySelector('[data-admin-email]')?.value || '').trim();
+        const password = String(form.querySelector('[data-admin-password]')?.value || '');
         const submitButton = form.querySelector('[type="submit"]');
 
         if (!email || !password) {
