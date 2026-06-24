@@ -4,8 +4,34 @@ import { smajEnv } from "./env.js";
 const supabaseConfig = {
     url: smajEnv.SUPABASE_URL,
     publishableKey: smajEnv.SUPABASE_PUBLISHABLE_KEY,
-    table: smajEnv.SUPABASE_APPLICATION_TABLE
+    table: "application"
 };
+
+const applicationColumns = [
+    'application_id',
+    'application_type',
+    'applicant_name',
+    'applicant_email',
+    'phone',
+    'country',
+    'edit_token',
+    'edit_link',
+    'status',
+    'data',
+    'files',
+    'created_at'
+];
+
+const optionalApplicationColumns = [
+    'linkedin',
+    'github',
+    'portfolio',
+    'project_name',
+    'project_website',
+    'stage',
+    'message',
+    'admin_notes'
+];
 
 const emailJsConfig = {
     publicKey: smajEnv.EMAILJS_PUBLIC_KEY,
@@ -262,7 +288,7 @@ function subscribeToDetailRealtime() {
             },
             function (payload) {
                 if (payload.new) {
-                    state.currentApplication = payload.new;
+                    state.currentApplication = normalizeApplicationRecord(payload.new);
                     renderApplicationDetails(state.currentApplication);
                     loadAuditLogs(state.currentApplication.application_id);
                     setStatus(document.querySelector('[data-admin-status]'), 'Application updated in realtime.', 'success');
@@ -273,36 +299,91 @@ function subscribeToDetailRealtime() {
 }
 
 async function fetchApplications() {
-    const { data, error } = await supabaseClient
-        .from(supabaseConfig.table)
-        .select('*');
+    const authUser = await getCurrentAuthUser();
+    console.log('[SMAJ Admin] current auth user id:', authUser?.id || null);
 
-    if (error) {
-        throw error;
-    }
+    const rows = await selectApplicationRows();
+    console.log('[SMAJ Admin] application rows returned:', rows);
 
-    return (data || []).sort(function (a, b) {
+    return rows.map(normalizeApplicationRecord).sort(function (a, b) {
         return getRecordTime(b) - getRecordTime(a);
     });
 }
 
 async function fetchApplication(applicationId) {
-    const { data, error } = await supabaseClient
+    const authUser = await getCurrentAuthUser();
+    console.log('[SMAJ Admin] current auth user id:', authUser?.id || null);
+
+    const selectColumns = applicationColumns.concat(optionalApplicationColumns).join(', ');
+    let response = await supabaseClient
         .from(supabaseConfig.table)
-        .select('*')
+        .select(selectColumns)
         .eq('application_id', applicationId)
         .limit(1)
         .maybeSingle();
 
+    if (isMissingOptionalColumnError(response.error)) {
+        response = await supabaseClient
+            .from(supabaseConfig.table)
+            .select(applicationColumns.join(', '))
+            .eq('application_id', applicationId)
+            .limit(1)
+            .maybeSingle();
+    }
+
+    const { data, error } = response;
+
     if (error) {
+        console.error('[SMAJ Admin] application fetch error:', error);
         throw error;
     }
+
+    console.log('[SMAJ Admin] application rows returned:', data ? [data] : []);
 
     if (!data) {
         throw new Error('Application not found.');
     }
 
-    return data;
+    return normalizeApplicationRecord(data);
+}
+
+async function selectApplicationRows() {
+    const selectColumns = applicationColumns.concat(optionalApplicationColumns).join(', ');
+    let response = await supabaseClient
+        .from(supabaseConfig.table)
+        .select(selectColumns)
+        .order('created_at', { ascending: false });
+
+    if (isMissingOptionalColumnError(response.error)) {
+        response = await supabaseClient
+            .from(supabaseConfig.table)
+            .select(applicationColumns.join(', '))
+            .order('created_at', { ascending: false });
+    }
+
+    if (response.error) {
+        console.error('[SMAJ Admin] application fetch error:', response.error);
+        throw response.error;
+    }
+
+    return response.data || [];
+}
+
+async function getCurrentAuthUser() {
+    const { data, error } = await supabaseClient.auth.getUser();
+
+    if (error) {
+        console.warn('[SMAJ Admin] auth user lookup failed:', error);
+        return null;
+    }
+
+    return data.user || null;
+}
+
+function isMissingOptionalColumnError(error) {
+    if (!error) return false;
+    const message = String(error.message || error.details || '');
+    return /column .* does not exist|could not find .* column|schema cache/i.test(message);
 }
 
 async function loadAuditLogs(applicationId) {
@@ -348,7 +429,7 @@ async function patchApplication(record, nextStatus, notes) {
         throw error;
     }
 
-    const nextRecord = updated || Object.assign({}, record, payload);
+    const nextRecord = normalizeApplicationRecord(updated || Object.assign({}, record, payload));
     await writeAuditLog(record, nextRecord, previousStatus, nextStatus, notes);
 
     return nextRecord;
@@ -586,6 +667,53 @@ function getSearchText(record) {
         data.phone,
         data.country
     ].join(' ').toLowerCase();
+}
+
+function normalizeApplicationRecord(record) {
+    const data = Object.assign({}, record.data || {});
+    const passthroughFields = [
+        'applicant_name',
+        'applicant_email',
+        'phone',
+        'country',
+        'linkedin',
+        'github',
+        'portfolio',
+        'project_name',
+        'project_website',
+        'stage',
+        'message',
+        'admin_notes'
+    ];
+
+    passthroughFields.forEach(function (key) {
+        if ((data[key] === undefined || data[key] === null || data[key] === '') && record[key] !== undefined && record[key] !== null) {
+            data[key] = record[key];
+        }
+    });
+
+    return Object.assign({}, record, {
+        application_type: record.application_type || data.application_type || '',
+        status: normalizeAdminStatus(record.status || data.status),
+        data,
+        files: normalizeFiles(record.files)
+    });
+}
+
+function normalizeFiles(files) {
+    if (Array.isArray(files)) return files;
+    if (!files) return [];
+
+    if (typeof files === 'string') {
+        try {
+            const parsed = JSON.parse(files);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    return [];
 }
 
 function renderApplicationDetails(record) {
