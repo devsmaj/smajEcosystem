@@ -1317,6 +1317,31 @@ section {
     overflow: hidden;
 }
 
+.application-decision-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    margin-top: 24px;
+    padding: 22px;
+}
+
+.application-decision-card strong {
+    color: var(--secondary-color);
+    display: block;
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+
+.application-decision-card p {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.application-decision-rejected {
+    border-color: #fecaca;
+    background: #fff7f7;
+}
+
 .application-progress-header {
     align-items: center;
     background: #101827;

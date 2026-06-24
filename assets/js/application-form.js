@@ -5,7 +5,7 @@ const supabaseConfig = {
     url: smajEnv.SUPABASE_URL,
     publishableKey: smajEnv.SUPABASE_PUBLISHABLE_KEY,
     bucket: smajEnv.SUPABASE_STORAGE_BUCKET,
-    table: smajEnv.SUPABASE_APPLICATION_TABLE
+    table: "application"
 };
 
 const emailJsConfig = {
@@ -595,7 +595,7 @@ function showApplicationDashboard(form, record, isFreshSubmission) {
     const result = form.parentElement.querySelector('[data-application-result]');
     const submitButton = form.querySelector('[type="submit"]');
 
-    record.status = normalizeApplicationStatus(record.status);
+    record = normalizeApplicationRecord(record);
     record.updated_at = record.updated_at || record.submitted_at || new Date().toISOString();
     saveDemoApplication(record);
     saveApplicationForForm(form, record);
@@ -626,14 +626,14 @@ async function refreshApplicationDashboard(form, fallbackRecord) {
 
         if (!latestRecord) return;
 
-        showApplicationDashboard(form, mergeApplicationRecords(fallbackRecord, latestRecord), false);
+        showApplicationDashboard(form, normalizeApplicationRecord(mergeApplicationRecords(fallbackRecord, latestRecord)), false);
     } catch (error) {
         console.warn('Could not refresh application status:', error);
     }
 }
 
 async function fetchApplicationRecord(applicationId, editToken) {
-    if (!editToken) return null;
+    if (!editToken || !appState.supabaseReady) return null;
 
     const { data, error } = await supabaseClient.rpc('get_application_status', {
         p_application_id: applicationId,
@@ -642,7 +642,8 @@ async function fetchApplicationRecord(applicationId, editToken) {
 
     if (error) throw error;
 
-    return Array.isArray(data) ? data[0] : data;
+    const record = Array.isArray(data) ? data[0] : data;
+    return record ? normalizeApplicationRecord(record) : null;
 }
 
 function startApplicationStatusPolling(form, record) {
@@ -671,12 +672,18 @@ function subscribeToApplicationUpdates(form, applicationId) {
             },
             function (payload) {
                 const currentRecord = getSavedApplicationForForm(form);
+
+                if (currentRecord?.edit_token) {
+                    refreshApplicationDashboard(form, currentRecord);
+                    return;
+                }
+
                 const nextRecord = payload.new
                     ? mergeApplicationRecords(currentRecord, payload.new)
                     : currentRecord;
 
                 if (nextRecord) {
-                    showApplicationDashboard(form, nextRecord, false);
+                    showApplicationDashboard(form, normalizeApplicationRecord(nextRecord), false);
                 }
             }
         )
@@ -701,10 +708,36 @@ function mergeApplicationRecords(currentRecord, databaseRecord) {
     });
 }
 
+function normalizeApplicationRecord(record) {
+    const data = Object.assign({}, record.data || {});
+    const status = normalizeApplicationStatus(record.status || data.status);
+    const submittedAt = record.submitted_at || record.created_at || data.submitted_at || '';
+
+    ['applicant_name', 'applicant_email', 'phone', 'country', 'project_name', 'message'].forEach(function (key) {
+        if ((data[key] === undefined || data[key] === null || data[key] === '') && record[key] !== undefined && record[key] !== null) {
+            data[key] = record[key];
+        }
+    });
+
+    return Object.assign({}, record, {
+        status,
+        submitted_at: submittedAt,
+        updated_at: record.updated_at || data.updated_at || data.admin_updated_at || submittedAt,
+        data,
+        files: Array.isArray(record.files) ? record.files : []
+    });
+}
+
 function createApplicationDashboardHtml(record, isFreshSubmission) {
     const status = normalizeApplicationStatus(record.status);
     const submittedDate = record.submitted_at ? formatDate(record.submitted_at) : 'Submitted';
     const projectName = record.data && record.data.project_name ? record.data.project_name : record.application_type;
+    const rejectedMessage = status === 'rejected'
+        ? `<div class="application-decision-card application-decision-rejected">
+            <strong>Application Not Selected</strong>
+            <p>Thank you for applying to SMAJ Ecosystem. After review, this application was not selected for the next stage. You may contact contact@smaj.org if you need support.</p>
+        </div>`
+        : '';
 
     return `
         <div class="application-success-panel">
@@ -736,6 +769,8 @@ function createApplicationDashboardHtml(record, isFreshSubmission) {
                 <strong>${escapeHtml(projectName || 'SMAJ Ecosystem Application')}</strong>
             </div>
         </div>
+
+        ${rejectedMessage}
 
         <div class="application-progress-card">
             <div class="application-progress-header">
@@ -804,12 +839,12 @@ function getProgressCount(status) {
 
 function getCompletedStepCount(status) {
     const counts = {
-        pending: 1,
+        pending: 2,
         submitted: 1,
-        under_review: 1,
-        interview: 2,
+        under_review: 2,
+        interview: 3,
         accepted: 5,
-        rejected: 3
+        rejected: 4
     };
 
     return counts[normalizeApplicationStatus(status)] || 1;
@@ -823,12 +858,12 @@ function normalizeApplicationStatus(status) {
 
 function formatStatus(status) {
     const labels = {
-        pending: 'Pending',
-        submitted: 'Submitted',
-        under_review: 'Under Review',
-        interview: 'Interview',
-        accepted: 'Accepted',
-        rejected: 'Rejected'
+        pending: 'Application Review',
+        submitted: 'Application Submitted',
+        under_review: 'Application Review',
+        interview: 'Founder / Team Interview',
+        accepted: 'Accepted - Join SMAJ Ecosystem Team',
+        rejected: 'Not Selected'
     };
 
     return labels[normalizeApplicationStatus(status)];
