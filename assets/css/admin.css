@@ -47,6 +47,40 @@
     gap: 12px;
 }
 
+.admin-topbar-left {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+}
+
+.admin-sidebar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.admin-sidebar-link {
+    align-items: center;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--text-secondary);
+    display: inline-flex;
+    font-size: 13px;
+    font-weight: 900;
+    gap: 7px;
+    min-height: 38px;
+    padding: 8px 12px;
+}
+
+.admin-sidebar-link.active,
+.admin-sidebar-link:hover {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: var(--white);
+}
+
 .admin-brand img {
     border-radius: 50%;
     height: 48px;
@@ -384,6 +418,75 @@
     color: #b91c1c;
 }
 
+.admin-news-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.admin-news-layout {
+    display: grid;
+    gap: 22px;
+}
+
+.admin-news-filters {
+    grid-template-columns: minmax(220px, 1fr) minmax(0, 220px) auto;
+}
+
+.admin-news-form-panel[hidden] {
+    display: none;
+}
+
+.admin-news-form textarea[name="content"] {
+    min-height: 280px;
+}
+
+.admin-news-actions {
+    min-width: 430px;
+}
+
+.admin-status-draft {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.admin-status-published {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.admin-news-preview[hidden] {
+    display: none;
+}
+
+.admin-news-preview {
+    align-items: flex-start;
+    background: rgba(16, 24, 39, 0.68);
+    display: flex;
+    inset: 0;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 34px 18px;
+    position: fixed;
+    z-index: 1400;
+}
+
+.admin-news-preview-card {
+    background: var(--white);
+    border-radius: 8px;
+    max-width: 920px;
+    padding: 30px;
+    position: relative;
+    width: 100%;
+}
+
+.admin-news-preview-close {
+    right: 14px;
+    top: 14px;
+    transform: none;
+}
+
 @media (max-width: 1000px) {
     .admin-stat-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -415,6 +518,15 @@
         grid-template-columns: 1fr 1fr;
     }
 
+    .admin-sidebar {
+        width: 100%;
+    }
+
+    .admin-sidebar-link {
+        flex: 1;
+        justify-content: center;
+    }
+
     .admin-hero-actions {
         display: grid;
         grid-template-columns: 1fr;
@@ -426,6 +538,7 @@
 
     .admin-stat-grid,
     .admin-filters,
+    .admin-news-filters,
     .admin-detail-grid {
         grid-template-columns: 1fr;
     }

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>News Admin | SMAJ Ecosystem</title>
+    <link rel="icon" type="image/png" href="/assets/images/logo.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/admin.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+</head>
+<body class="admin-body" data-admin-page="news">
+    <header class="admin-topbar">
+        <div class="admin-topbar-left">
+            <a href="/admin.html" class="admin-brand">
+                <img src="/assets/images/logo.jpg" alt="SMAJ Ecosystem Logo">
+                <span>SMAJ Admin</span>
+            </a>
+            <nav class="admin-sidebar" aria-label="Admin sections">
+                <a class="admin-sidebar-link" href="/admin.html"><i class="bx bx-list-check"></i>Applications</a>
+                <a class="admin-sidebar-link active" href="/admin-news.html"><i class="bx bx-news"></i>News</a>
+            </nav>
+        </div>
+        <nav class="admin-actions">
+            <a href="/news/" class="btn btn-outline">View News</a>
+            <button type="button" class="btn btn-primary" data-admin-logout>Logout</button>
+        </nav>
+    </header>
+
+    <main class="admin-main">
+        <section class="admin-hero">
+            <div>
+                <span class="application-kicker">News Publishing</span>
+                <h1>News Dashboard</h1>
+                <p>Create, draft, preview, publish, edit, and remove SMAJ Ecosystem news articles.</p>
+            </div>
+            <div class="admin-hero-actions">
+                <button type="button" class="btn btn-outline" data-news-refresh><i class="bx bx-refresh"></i>Refresh</button>
+                <button type="button" class="btn btn-accent" data-news-new><i class="bx bx-plus"></i>Create News</button>
+            </div>
+        </section>
+
+        <section class="admin-stat-grid" aria-label="News counts">
+            <article class="admin-stat-card"><span>All News</span><strong data-news-count-all>0</strong></article>
+            <article class="admin-stat-card"><span>Drafts</span><strong data-news-count-draft>0</strong></article>
+            <article class="admin-stat-card"><span>Published</span><strong data-news-count-published>0</strong></article>
+            <article class="admin-stat-card"><span>Categories</span><strong data-news-count-categories>0</strong></article>
+            <article class="admin-stat-card"><span>Authors</span><strong data-news-count-authors>0</strong></article>
+        </section>
+
+        <section class="admin-news-tabs" aria-label="News views">
+            <button class="filter-btn active" type="button" data-news-view="all">All News</button>
+            <button class="filter-btn" type="button" data-news-view="create">Create News</button>
+            <button class="filter-btn" type="button" data-news-view="draft">Drafts</button>
+            <button class="filter-btn" type="button" data-news-view="published">Published</button>
+        </section>
+
+        <div class="admin-news-layout">
+            <section class="admin-panel" data-news-list-panel>
+                <div class="admin-panel-header">
+                    <div>
+                        <h2 data-news-list-title>All News</h2>
+                        <p><span data-news-visible-count>0</span> articles visible. Drafts remain admin-only.</p>
+                    </div>
+                    <p class="application-status" data-news-status aria-live="polite"></p>
+                </div>
+
+                <div class="admin-filters admin-news-filters">
+                    <div class="form-group">
+                        <label for="newsSearch">Search News</label>
+                        <input id="newsSearch" type="search" placeholder="Title, category, author, tag..." data-news-search>
+                    </div>
+                    <div class="form-group">
+                        <label for="newsStatusFilter">Status</label>
+                        <select id="newsStatusFilter" data-news-status-filter>
+                            <option value="">All statuses</option>
+                            <option value="draft">Draft</option>
+                            <option value="published">Published</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-outline admin-filter-reset" data-news-reset>Reset Filters</button>
+                </div>
+
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Article</th>
+                                <th>Status</th>
+                                <th>Category</th>
+                                <th>Date</th>
+                                <th>Author</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody data-news-list>
+                            <tr><td colspan="6">Loading news...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="admin-panel admin-news-form-panel" data-news-form-panel hidden>
+                <div class="admin-panel-header">
+                    <div>
+                        <h2 data-news-form-heading>Create News</h2>
+                        <p>Slug, SEO fields, Open Graph image, and publish date are saved with each article.</p>
+                    </div>
+                    <button type="button" class="btn btn-outline" data-news-close-form><i class="bx bx-x"></i>Close</button>
+                </div>
+
+                <form class="admin-news-form" data-news-form>
+                    <input type="hidden" name="id" data-news-id>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="newsTitle">Title</label>
+                            <input id="newsTitle" name="title" type="text" required data-news-title>
+                        </div>
+                        <div class="form-group">
+                            <label for="newsSlug">Auto Slug</label>
+                            <input id="newsSlug" name="slug" type="text" required data-news-slug>
+                        </div>
+                        <div class="form-group form-wide">
+                            <label for="newsExcerpt">Excerpt</label>
+                            <textarea id="newsExcerpt" name="excerpt" required data-news-excerpt></textarea>
+                        </div>
+                        <div class="form-group form-wide">
+                            <label for="newsContent">Content</label>
+                            <textarea id="newsContent" name="content" required data-news-content></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="newsImage">Featured Image</label>
+                            <input id="newsImage" name="featured_image_file" type="file" accept="image/png,image/jpeg,image/webp" data-news-image-file>
+                            <span class="file-feedback" data-news-image-feedback></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="newsImageUrl">Featured Image URL</label>
+                            <input id="newsImageUrl" name="featured_image" type="url" data-news-image-url>
+                        </div>
+                        <div class="form-group">
+                            <label for="newsCategory">Category</label>
+                            <input id="newsCategory" name="category" type="text" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newsTags">Tags</label>
+                            <input id="newsTags" name="tags" type="text" placeholder="AI, ventures, updates">
+                        </div>
+                        <div class="form-group">
+                            <label for="newsAuthor">Author</label>
+                            <input id="newsAuthor" name="author" type="text" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newsStatus">Status</label>
+                            <select id="newsStatus" name="status" required>
+                                <option value="draft">Draft</option>
+                                <option value="published">Published</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="newsSeoTitle">SEO Title</label>
+                            <input id="newsSeoTitle" name="seo_title" type="text">
+                        </div>
+                        <div class="form-group">
+                            <label for="newsPublishedAt">Published Date</label>
+                            <input id="newsPublishedAt" name="published_at" type="datetime-local">
+                        </div>
+                        <div class="form-group form-wide">
+                            <label for="newsSeoDescription">SEO Description</label>
+                            <textarea id="newsSeoDescription" name="seo_description"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" data-news-preview><i class="bx bx-show"></i>Preview</button>
+                        <button type="button" class="btn btn-outline" data-news-save-draft><i class="bx bx-save"></i>Save Draft</button>
+                        <button type="submit" class="btn btn-primary" data-news-publish><i class="bx bx-upload"></i>Save Article</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </main>
+
+    <div class="admin-news-preview" data-news-preview-modal hidden>
+        <div class="admin-news-preview-card">
+            <button type="button" class="password-toggle admin-news-preview-close" data-news-close-preview aria-label="Close preview"><i class="bx bx-x"></i></button>
+            <div data-news-preview-content></div>
+        </div>
+    </div>
+
+    <script type="module" src="/assets/js/admin-news.js"></script>
+</body>
+</html>

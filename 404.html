@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="index, follow">
+    <meta name="description" content="Read SMAJ Ecosystem news.">
+    <meta property="og:title" content="SMAJ News">
+    <meta property="og:description" content="Read SMAJ Ecosystem news.">
+    <meta property="og:image" content="https://smaj.org/assets/images/logo.jpg">
+    <meta property="og:url" content="https://smaj.org/news/">
+    <meta property="og:type" content="article">
+    <link rel="icon" type="image/png" href="/assets/images/logo.jpg">
+    <link rel="canonical" href="https://smaj.org/news/">
+    <title>News Article | SMAJ Ecosystem</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+</head>
+<body data-news-page="detail">
+    <header class="header">
+        <div class="header-container">
+            <div class="header-inner">
+                <a href="/" class="logo-wrap"><img src="/assets/images/logo.jpg" alt="SMAJ Ecosystem Logo" class="logo"></a>
+                <nav class="nav-desktop" id="primary-navigation">
+                    <a href="/" class="nav-link">Home</a>
+                    <a href="/about/" class="nav-link">About</a>
+                    <a href="/ventures/" class="nav-link">Ventures</a>
+                    <a href="/partnerships/" class="nav-link">Partnerships</a>
+                    <a href="/insights/" class="nav-link">Insights</a>
+                    <a href="/news/" class="nav-link active">News</a>
+                    <a href="/contact/" class="nav-link">Contact</a>
+                </nav>
+                <a href="/contact/" class="btn btn-nav-cta">Partner With Us</a>
+                <button class="btn-menu-toggle" type="button" aria-expanded="false" aria-label="Toggle menu">
+                    <span class="icon-open">&#9776;</span>
+                    <span class="icon-close">&times;</span>
+                </button>
+            </div>
+        </div>
+        <div class="mobile-menu-overlay"></div>
+        <nav class="mobile-menu">
+            <a href="/" class="mobile-nav-link">Home</a>
+            <a href="/about/" class="mobile-nav-link">About</a>
+            <a href="/ventures/" class="mobile-nav-link">Ventures</a>
+            <a href="/partnerships/" class="mobile-nav-link">Partnerships</a>
+            <a href="/insights/" class="mobile-nav-link">Insights</a>
+            <a href="/news/" class="mobile-nav-link active">News</a>
+            <a href="/contact/" class="mobile-nav-link">Contact</a>
+            <a href="/contact/" class="btn btn-nav-cta btn-mobile-cta">Partner With Us</a>
+        </nav>
+    </header>
+    <main class="news-detail-shell">
+        <p class="application-status news-status" data-news-status aria-live="polite">Loading article...</p>
+        <article data-news-article></article>
+        <section class="news-related-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Related Articles</h2>
+                    <p>More published news from SMAJ Ecosystem.</p>
+                </div>
+                <div class="news-grid" data-related-news></div>
+            </div>
+        </section>
+    </main>
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/navigation.js"></script>
+    <script type="module" src="/assets/js/news.js"></script>
+</body>
+</html>

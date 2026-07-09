@@ -3,24 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="SMAJ Ecosystem is a startup technology company building, partnering, and scaling future technology ventures through innovation, AI, and digital solutions.">
+    <meta name="description" content="Read SMAJ Ecosystem news.">
     <meta name="robots" content="index, follow">
-    <meta property="og:title" content="SMAJ Ecosystem">
-    <meta property="og:description" content="Building the next generation of technology companies.">
+    <meta property="og:title" content="SMAJ News">
+    <meta property="og:description" content="Read SMAJ Ecosystem news.">
     <meta property="og:image" content="https://smaj.org/assets/images/logo.jpg">
-    <meta property="og:url" content="https://smaj.org">
-    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://smaj.org/news/">
+    <meta property="og:type" content="article">
     <link rel="icon" type="image/png" href="/assets/images/logo.jpg">
     <link rel="apple-touch-icon" href="/assets/images/logo.jpg">
-    <title>Edit Application | SMAJ Ecosystem</title>
+    <link rel="canonical" href="https://smaj.org/news/">
+    <title>News Article | SMAJ Ecosystem</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
 </head>
-<body>
-    <div class="preloader"><div class="preloader-logo"><img src="/assets/images/logo.jpg" alt="SMAJ Ecosystem Logo" class="preloader-logo-img"></div></div>
+<body data-news-page="detail">
+    <div class="preloader">
+        <div class="preloader-logo">
+            <img src="/assets/images/logo.jpg" alt="SMAJ Ecosystem Logo" class="preloader-logo-img">
+        </div>
+    </div>
 
     <header class="header">
         <div class="header-container">
@@ -32,11 +37,14 @@
                     <a href="/ventures/" class="nav-link">Ventures</a>
                     <a href="/partnerships/" class="nav-link">Partnerships</a>
                     <a href="/insights/" class="nav-link">Insights</a>
-                    <a href="/news/" class="nav-link">News</a>
+                    <a href="/news/" class="nav-link active">News</a>
                     <a href="/contact/" class="nav-link">Contact</a>
                 </nav>
                 <a href="/contact/" class="btn btn-nav-cta">Partner With Us</a>
-                <button class="btn-menu-toggle" type="button" aria-expanded="false" aria-label="Toggle menu"><span class="icon-open">&#9776;</span><span class="icon-close">&times;</span></button>
+                <button class="btn-menu-toggle" type="button" aria-expanded="false" aria-label="Toggle menu">
+                    <span class="icon-open">&#9776;</span>
+                    <span class="icon-close">&times;</span>
+                </button>
             </div>
         </div>
         <div class="mobile-menu-overlay"></div>
@@ -46,44 +54,47 @@
             <a href="/ventures/" class="mobile-nav-link">Ventures</a>
             <a href="/partnerships/" class="mobile-nav-link">Partnerships</a>
             <a href="/insights/" class="mobile-nav-link">Insights</a>
-            <a href="/news/" class="mobile-nav-link">News</a>
+            <a href="/news/" class="mobile-nav-link active">News</a>
             <a href="/contact/" class="mobile-nav-link">Contact</a>
             <a href="/contact/" class="btn btn-nav-cta btn-mobile-cta">Partner With Us</a>
         </nav>
     </header>
 
-    <section class="page-header">
-        <div class="container">
-            <div class="page-header-content">
-                <h1>Edit Application</h1>
-                <p>Use the secure edit link generated after submission to review your SMAJ Ecosystem application.</p>
-                <div class="breadcrumb">
-                    <a href="/">Home</a>
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <span>Edit Application</span>
+    <main class="news-detail-shell">
+        <p class="application-status news-status" data-news-status aria-live="polite">Loading article...</p>
+        <article data-news-article></article>
+        <section class="news-related-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Related Articles</h2>
+                    <p>More published news from SMAJ Ecosystem.</p>
                 </div>
+                <div class="news-grid" data-related-news></div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
-    <section class="application-section">
+    <footer class="footer">
         <div class="container">
-            <div class="application-card application-edit-card" data-edit-application>
-                <p class="form-note">Loading application...</p>
+            <div class="footer-bottom">
+                <div class="footer-legal">
+                    <a href="/privacy-policy/">Privacy Policy</a>
+                    <a href="/terms-of-service/">Terms of Service</a>
+                    <a href="/cookie-policy/">Cookie Policy</a>
+                </div>
+                <p>&copy; 2026 SMAJ Ecosystem. All rights reserved.</p>
             </div>
         </div>
-    </section>
+    </footer>
 
-    <footer class="footer"><div class="container"><div class="footer-bottom"><p>&copy; 2026 SMAJ Ecosystem. All rights reserved.</p><div class="footer-legal"><a href="/privacy-policy/">Privacy Policy</a><a href="/terms-of-service/">Terms of Service</a></div></div></div></footer>
-    <div class="scroll-top"><svg viewBox="0 0 24 24" fill="none"><path d="M18 15L12 9L6 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="scroll-top">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 15L12 9L6 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </div>
+
     <script src="/assets/js/main.js"></script>
     <script src="/assets/js/navigation.js"></script>
-    <script type="module" src="/assets/js/application-form.js"></script>
+    <script type="module" src="/assets/js/news.js"></script>
 </body>
 </html>
-
-
-
-
-
-

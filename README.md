@@ -24,6 +24,7 @@ The ecosystem is built around four operating pillars:
 - **Ventures** - portfolio-style grid for SMAJ Ecosystem, Labs, Ventures, Partners, products, and future companies.
 - **Partnerships** - founder, technology, and strategic partnership paths with dedicated application forms.
 - **Insights** - articles and updates about startup building, AI, innovation, and SMAJ's journey.
+- **News** - published SMAJ updates loaded from Supabase, with article detail pages and share metadata.
 - **Contact** - contact details, social links, map, and partnership form.
 - **Legal** - privacy policy, terms of service, cookie policy, and disclaimer.
 - **Success** - confirmation page for received messages.
@@ -65,6 +66,10 @@ smajEcosystem/
 |   |-- index.html
 |-- insights/
 |   |-- index.html
+|-- news/
+|   |-- index.html
+|   |-- article/
+|       |-- index.html
 |-- contact/
 |   |-- index.html
 |-- legal/
@@ -80,6 +85,8 @@ smajEcosystem/
     |   |-- navigation.js
     |   |-- projects-filter.js
     |   |-- application-form.js
+    |   |-- admin-news.js
+    |   |-- news.js
     |-- images/
         |-- logo.jpg
         |-- logo.svg
@@ -167,3 +174,28 @@ Before using the admin dashboard:
 3. Insert that Auth user ID into `public.admin_users`.
 
 Admin application changes are recorded in `public.audit_logs`.
+
+## News Publishing System
+
+Static news pages are available at:
+
+- `/news/`
+- `/news/<slug>/`
+- `/news/article/?slug=<slug>` as a static-host fallback
+- `/admin-news.html`
+
+The admin news dashboard supports all news, create news, edit news, drafts, published articles, preview, delete, save draft, and publish workflows. Public pages query only rows where `status = 'published'`, so drafts stay admin-only.
+
+Before using news publishing:
+
+1. Run `supabase-news-policies.sql` in the Supabase SQL Editor.
+2. Confirm the `news` Supabase Storage bucket exists and is public.
+3. Keep article image uploads in that bucket, or paste a featured image URL manually.
+
+Article SEO title, SEO description, canonical URL, Open Graph title, description, and image are set by `assets/js/news.js` after the article loads. The static `sitemap.xml` includes `/news/`, and `scripts/generate-news-sitemap.mjs` rewrites `sitemap.xml` with every published article URL from Supabase:
+
+```bash
+node scripts/generate-news-sitemap.mjs
+```
+
+The SQL file also creates `public.get_news_sitemap()` for hosting setups that prefer reading sitemap rows directly from Supabase.

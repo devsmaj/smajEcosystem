@@ -15,10 +15,16 @@
 </head>
 <body class="admin-body" data-admin-page="dashboard">
     <header class="admin-topbar">
-        <a href="/admin.html" class="admin-brand">
-            <img src="/assets/images/logo.jpg" alt="SMAJ Ecosystem Logo">
-            <span>SMAJ Admin</span>
-        </a>
+        <div class="admin-topbar-left">
+            <a href="/admin.html" class="admin-brand">
+                <img src="/assets/images/logo.jpg" alt="SMAJ Ecosystem Logo">
+                <span>SMAJ Admin</span>
+            </a>
+            <nav class="admin-sidebar" aria-label="Admin sections">
+                <a class="admin-sidebar-link active" href="/admin.html"><i class="bx bx-list-check"></i>Applications</a>
+                <a class="admin-sidebar-link" href="/admin-news.html"><i class="bx bx-news"></i>News</a>
+            </nav>
+        </div>
         <nav class="admin-actions">
             <a href="/" class="btn btn-outline">Website</a>
             <button type="button" class="btn btn-primary" data-admin-logout>Logout</button>
