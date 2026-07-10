@@ -960,6 +960,10 @@ function setButtonLoading(button, isLoading) {
 function getAdminErrorMessage(error) {
     const message = String(error && error.message ? error.message : error);
 
+    if (/failed to fetch|networkerror|load failed/i.test(message)) {
+        return 'Could not connect to Supabase. Check the public Supabase URL/key in assets/js/env.js and confirm this domain is allowed in Supabase Auth URL settings.';
+    }
+
     if (/row-level security|permission denied|401|403|JWT/i.test(message)) {
         return 'Supabase denied access. Configure authenticated admin RLS policies before using live admin reads and updates.';
     }

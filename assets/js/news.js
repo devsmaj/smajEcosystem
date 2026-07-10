@@ -9,6 +9,23 @@ const supabaseConfig = {
 
 const supabaseClient = createClient(supabaseConfig.url, supabaseConfig.publishableKey);
 const defaultImage = "https://smaj.org/assets/images/logo.jpg";
+const fallbackArticles = [
+    {
+        id: "local-smaj-ecosystem-update",
+        title: "SMAJ Ecosystem News Is Being Updated",
+        slug: "smaj-ecosystem-news-update",
+        excerpt: "SMAJ Ecosystem news publishing is active, and the latest official updates will appear here as they are published.",
+        content: "SMAJ Ecosystem is preparing official updates, launch notes, community stories, and product announcements. Please check back soon for the latest published news from the team.",
+        featured_image: defaultImage,
+        category: "Ecosystem",
+        author: "SMAJ Team",
+        tags: ["SMAJ", "Ecosystem", "Updates"],
+        status: "published",
+        published_at: new Date().toISOString(),
+        seo_title: "SMAJ Ecosystem News",
+        seo_description: "Official SMAJ Ecosystem news and updates."
+    }
+];
 
 document.addEventListener("DOMContentLoaded", function () {
     const page = document.body.dataset.newsPage;
@@ -34,7 +51,9 @@ async function loadNewsList() {
         if (list) list.innerHTML = articles.map(createNewsCard).join("");
     } catch (error) {
         console.error(error);
-        setStatus(status, "Could not load news right now. Please try again later.", "error");
+        const articles = fallbackArticles.map(normalizeArticle);
+        setStatus(status, "Showing latest available SMAJ Ecosystem update while live news reconnects.", "info");
+        if (list) list.innerHTML = articles.map(createNewsCard).join("");
     }
 }
 
