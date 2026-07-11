@@ -1,5 +1,5 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-import { smajEnv } from "./env.js";
+import { smajEnv } from "./env-module.js";
 
 const supabaseConfig = {
     url: smajEnv.SUPABASE_URL,

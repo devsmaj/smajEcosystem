@@ -1,11 +1,13 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-import { smajEnv } from "./env.js";
-
+const adminEnv = window.SMAJ_ENV;
+if (!adminEnv) console.error('[SMAJ Admin] assets/js/env.js is missing or did not load before admin.js.');
 const supabaseConfig = {
-    url: smajEnv.SUPABASE_URL,
-    publishableKey: smajEnv.SUPABASE_PUBLISHABLE_KEY,
+    url: window.SMAJ_ENV?.SUPABASE_URL?.trim() || '',
+    publishableKey: window.SMAJ_ENV?.SUPABASE_PUBLISHABLE_KEY?.trim() || '',
     table: "application"
 };
+if (!supabaseConfig.url) console.error('[SMAJ Admin] window.SMAJ_ENV.SUPABASE_URL is empty.');
+if (!supabaseConfig.publishableKey) console.error('[SMAJ Admin] window.SMAJ_ENV.SUPABASE_PUBLISHABLE_KEY is empty.');
+if (!window.supabase?.createClient) console.error('[SMAJ Admin] Supabase JS CDN is missing or did not load before admin.js.');
 
 const applicationColumns = [
     'application_id',
@@ -34,13 +36,15 @@ const optionalApplicationColumns = [
 ];
 
 const emailJsConfig = {
-    publicKey: smajEnv.EMAILJS_PUBLIC_KEY,
-    serviceId: smajEnv.EMAILJS_SERVICE_ID,
-    userTemplateId: smajEnv.EMAILJS_USER_TEMPLATE_ID,
-    adminEmail: smajEnv.SMAJ_CONTACT_EMAIL
+    publicKey: adminEnv?.EMAILJS_PUBLIC_KEY || "8P_4KsqS5t0soM0gX",
+    serviceId: adminEnv?.EMAILJS_SERVICE_ID || "service_32losmn",
+    userTemplateId: adminEnv?.EMAILJS_USER_TEMPLATE_ID || "template_5h069ek",
+    adminEmail: adminEnv?.SMAJ_CONTACT_EMAIL || "contact@smaj.org"
 };
 
-const supabaseClient = createClient(supabaseConfig.url, supabaseConfig.publishableKey);
+const supabaseClient = window.supabase?.createClient && supabaseConfig.url && supabaseConfig.publishableKey
+    ? window.supabase.createClient(supabaseConfig.url, supabaseConfig.publishableKey)
+    : null;
 
 const adminConfig = {
     loginPath: "/admin-login.html",
@@ -58,6 +62,12 @@ const state = {
 };
 
 document.addEventListener('DOMContentLoaded', async function () {
+    if (!supabaseClient) {
+        console.error('[SMAJ Admin] Admin initialization stopped because Supabase configuration is unavailable.');
+        const status = document.querySelector('[data-admin-login-status]');
+        if (status) status.textContent = 'Admin configuration is unavailable. Check the browser console.';
+        return;
+    }
     initPasswordToggle();
     await initAdminLogin();
     initAdminLogout();
