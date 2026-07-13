@@ -14,7 +14,7 @@ create table if not exists public.news_articles (
     seo_title text,
     seo_description text,
     published_at timestamptz,
-    created_by uuid references public.admin_users(id) on delete set null,
+    created_by uuid references auth.users(id) on delete set null,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );

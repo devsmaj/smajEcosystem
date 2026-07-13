@@ -280,15 +280,34 @@ async function upsertNewsArticle(actionButton) {
     setButtonLoading(actionButton, true);
 
     try {
+        const {
+            data: { user },
+            error: userError
+        } = await supabaseClient.auth.getUser();
+
+        if (userError || !user) {
+            throw new Error("Authenticated admin user not found.");
+        }
+
+        console.info("[SMAJ News] Authenticated user.id:", user.id);
+
         const payload = collectArticlePayload(form);
         payload.featured_image = await uploadFeaturedImage(payload.featured_image);
+
+        if (!state.editingId) {
+            payload.created_by = user.id;
+            console.info("[SMAJ News] created_by submitted:", payload.created_by);
+        }
 
         const query = state.editingId
             ? supabaseClient.from(supabaseConfig.table).update(payload).eq("id", state.editingId).select().maybeSingle()
             : supabaseClient.from(supabaseConfig.table).insert(payload).select().maybeSingle();
 
         const { data, error } = await query;
-        if (error) throw error;
+        if (error) {
+            if (!state.editingId) console.error("[SMAJ News] Supabase insert error:", error);
+            throw error;
+        }
 
         const saved = normalizeArticle(data || Object.assign({ id: state.editingId }, payload));
         clearCreateNewsFormDraft();
@@ -359,8 +378,7 @@ function collectArticlePayload(form) {
         seo_title: String(formData.get("seo_title") || title).trim(),
         seo_description: String(formData.get("seo_description") || formData.get("excerpt") || "").trim(),
         published_at: status === "published" ? publishedAt : null,
-        updated_at: now,
-        created_by: state.adminUser?.id || null
+        updated_at: now
     };
 }
 
