@@ -189,7 +189,7 @@ The admin news dashboard supports all news, create news, edit news, drafts, publ
 Before using news publishing:
 
 1. Run `supabase-news-policies.sql` in the Supabase SQL Editor.
-2. Confirm the `news` Supabase Storage bucket exists and is public.
+2. Confirm the `news-images` Supabase Storage bucket exists and is public.
 3. Keep article image uploads in that bucket, or paste a featured image URL manually.
 
 Article SEO title, SEO description, canonical URL, Open Graph title, description, and image are set by `assets/js/news.js` after the article loads. The static `sitemap.xml` includes `/news/`, and `scripts/generate-news-sitemap.mjs` rewrites `sitemap.xml` with every published article URL from Supabase:

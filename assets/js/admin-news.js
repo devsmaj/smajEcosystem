@@ -4,9 +4,11 @@ import { smajEnv } from "./env-module.js";
 const supabaseConfig = {
     url: smajEnv.SUPABASE_URL,
     publishableKey: smajEnv.SUPABASE_PUBLISHABLE_KEY,
-    table: smajEnv.SUPABASE_NEWS_TABLE || "news_articles",
-    bucket: smajEnv.SUPABASE_NEWS_BUCKET || "news"
+    table: smajEnv.SUPABASE_NEWS_TABLE || "news_articles"
 };
+
+const newsImagesBucket = "news-images";
+const missingNewsImagesBucketMessage = "Storage bucket 'news-images' not found. Please create it in Supabase Storage.";
 
 const supabaseClient = createClient(supabaseConfig.url, supabaseConfig.publishableKey);
 const adminConfig = {
@@ -318,20 +320,31 @@ async function uploadFeaturedImage(existingUrl) {
     }
 
     setStatus(feedback, "Uploading image...", "info");
+    await verifyNewsImagesBucket();
     const slug = document.querySelector("[data-news-slug]")?.value || "news";
     const storagePath = `news/${slug}/${Date.now()}-${sanitizeFileName(file.name)}`;
-    const { error } = await supabaseClient.storage.from(supabaseConfig.bucket).upload(storagePath, file, {
+    const { error } = await supabaseClient.storage.from('news-images').upload(storagePath, file, {
         contentType: file.type,
         upsert: false
     });
 
     if (error) throw error;
 
-    const { data } = supabaseClient.storage.from(supabaseConfig.bucket).getPublicUrl(storagePath);
+    const { data } = supabaseClient.storage.from('news-images').getPublicUrl(storagePath);
     setStatus(feedback, "Image uploaded.", "success");
     if (input) input.value = "";
 
     return data.publicUrl;
+}
+
+async function verifyNewsImagesBucket() {
+    const { data, error } = await supabaseClient.storage.getBucket(newsImagesBucket);
+
+    if (!data || /bucket not found|not found|404/i.test(String(error?.message || ""))) {
+        throw new Error(missingNewsImagesBucketMessage);
+    }
+
+    if (error) throw error;
 }
 
 function collectArticlePayload(form) {

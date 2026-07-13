@@ -129,14 +129,14 @@ $$;
 grant execute on function public.get_news_sitemap() to anon, authenticated;
 
 insert into storage.buckets (id, name, public)
-values ('news', 'news', true)
+values ('news-images', 'news-images', true)
 on conflict (id) do update set public = excluded.public;
 
 drop policy if exists "News images are public" on storage.objects;
 create policy "News images are public"
 on storage.objects
 for select
-using (bucket_id = 'news');
+using (bucket_id = 'news-images');
 
 drop policy if exists "Admins can upload news images" on storage.objects;
 create policy "Admins can upload news images"
@@ -144,7 +144,7 @@ on storage.objects
 for insert
 to authenticated
 with check (
-    bucket_id = 'news'
+    bucket_id = 'news-images'
     and exists (
         select 1 from public.admin_users
         where admin_users.user_id = auth.uid()
@@ -157,7 +157,7 @@ on storage.objects
 for update
 to authenticated
 using (
-    bucket_id = 'news'
+    bucket_id = 'news-images'
     and exists (
         select 1 from public.admin_users
         where admin_users.user_id = auth.uid()
@@ -170,7 +170,7 @@ on storage.objects
 for delete
 to authenticated
 using (
-    bucket_id = 'news'
+    bucket_id = 'news-images'
     and exists (
         select 1 from public.admin_users
         where admin_users.user_id = auth.uid()

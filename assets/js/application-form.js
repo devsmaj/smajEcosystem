@@ -4,9 +4,11 @@ import { smajEnv } from "./env-module.js";
 const supabaseConfig = {
     url: smajEnv.SUPABASE_URL,
     publishableKey: smajEnv.SUPABASE_PUBLISHABLE_KEY,
-    bucket: smajEnv.SUPABASE_STORAGE_BUCKET,
     table: "application"
 };
+
+const newsImagesBucket = "news-images";
+const missingNewsImagesBucketMessage = "Storage bucket 'news-images' not found. Please create it in Supabase Storage.";
 
 const emailJsConfig = {
     publicKey: smajEnv.EMAILJS_PUBLIC_KEY,
@@ -257,11 +259,12 @@ function validateSelectedFiles(files) {
 async function uploadApplicationFiles(applicationId, applicationType, files) {
     const uploaded = [];
     const folder = getApplicationFolder(applicationType);
+    await verifyNewsImagesBucket();
 
     for (const item of files) {
         const storagePath = `applications/${folder}/${applicationId}/${Date.now()}-${sanitizeFileName(item.file.name)}`;
         const uploadResult = await withTimeout(
-            supabaseClient.storage.from(supabaseConfig.bucket).upload(storagePath, item.file, {
+            supabaseClient.storage.from('news-images').upload(storagePath, item.file, {
                 contentType: item.file.type || 'application/octet-stream',
                 upsert: false
             }),
@@ -278,7 +281,7 @@ async function uploadApplicationFiles(applicationId, applicationType, files) {
             name: item.file.name,
             size: item.file.size,
             type: item.file.type,
-            bucket: supabaseConfig.bucket,
+            bucket: newsImagesBucket,
             storagePath,
             downloadUrl: getSupabasePublicUrl(storagePath)
         });
@@ -434,7 +437,17 @@ function sanitizeFileName(fileName) {
 }
 
 function getSupabasePublicUrl(storagePath) {
-    return `${supabaseConfig.url}/storage/v1/object/public/${encodeURIComponent(supabaseConfig.bucket)}/${storagePath}`;
+    return `${supabaseConfig.url}/storage/v1/object/public/news-images/${storagePath}`;
+}
+
+async function verifyNewsImagesBucket() {
+    const { data, error } = await supabaseClient.storage.getBucket(newsImagesBucket);
+
+    if (!data || /bucket not found|not found|404/i.test(String(error?.message || ''))) {
+        throw new Error(missingNewsImagesBucketMessage);
+    }
+
+    if (error) throw error;
 }
 
 async function parseSupabaseError(response) {
@@ -448,7 +461,7 @@ async function parseSupabaseError(response) {
         const error = JSON.parse(text);
 
         if (error.message === 'Bucket not found') {
-            return `Supabase bucket "${supabaseConfig.bucket}" was not found. Create this Storage bucket in Supabase first.`;
+            return missingNewsImagesBucketMessage;
         }
 
         if (/row-level security/i.test(error.message || error.error || text)) {
@@ -467,7 +480,7 @@ function parseSupabaseClientError(error) {
     if (!message) return '';
 
     if (message === 'Bucket not found') {
-        return `Supabase bucket "${supabaseConfig.bucket}" was not found. Create this Storage bucket in Supabase first.`;
+        return missingNewsImagesBucketMessage;
     }
 
     if (/row-level security/i.test(message)) {

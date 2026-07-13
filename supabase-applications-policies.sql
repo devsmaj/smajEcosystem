@@ -148,14 +148,13 @@ to authenticated
 with check (public.is_smaj_admin());
 
 -- 7. Storage policy for public application file uploads.
--- Keep the bucket name as "applicatoins" because that is the bucket name currently used by the site.
 drop policy if exists "Allow public application file uploads" on storage.objects;
 
 create policy "Allow public application file uploads"
 on storage.objects
 for insert
 to anon
-with check (bucket_id = 'applicatoins');
+with check (bucket_id = 'news-images');
 
 -- 8. After creating an admin in Supabase Auth, allowlist them:
 --
