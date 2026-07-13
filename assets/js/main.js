@@ -280,8 +280,23 @@ async function submitNewsletterForm(form) {
 
 function setNewsletterStatus(status, message, type) {
     if (!status) return;
+    if (status.feedbackPopupTimer) window.clearTimeout(status.feedbackPopupTimer);
     status.textContent = message;
     status.dataset.status = type;
+    status.classList.toggle('feedback-popup', Boolean(message));
+    status.classList.toggle('feedback-popup-visible', Boolean(message));
+
+    if (!message) return;
+    status.feedbackPopupTimer = window.setTimeout(function () {
+        status.classList.remove('feedback-popup-visible');
+        window.setTimeout(function () {
+            if (!status.classList.contains('feedback-popup-visible')) {
+                status.classList.remove('feedback-popup');
+                status.textContent = '';
+                status.removeAttribute('data-status');
+            }
+        }, 200);
+    }, 3000);
 }
 
 function setNewsletterButtonLoading(button, isLoading) {

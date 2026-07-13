@@ -1,5 +1,6 @@
 import { smajEnv } from "./env-module.js";
 import { newsImagesBucket, supabaseClient, verifyUploadBucket } from "./supabase-client.js";
+import { showFeedbackPopup } from "./feedback.js";
 
 const supabaseConfig = {
     table: smajEnv.SUPABASE_NEWS_TABLE || "news_articles"
@@ -674,9 +675,7 @@ function setDefaultPublishedDate() {
 }
 
 function setStatus(element, message, type) {
-    if (!element) return;
-    element.textContent = message;
-    element.dataset.status = type;
+    showFeedbackPopup(element, message, type);
 }
 
 function setText(selector, value) {

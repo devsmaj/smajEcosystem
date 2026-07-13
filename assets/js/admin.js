@@ -1,4 +1,5 @@
 import { supabaseClient, supabaseConfig as sharedSupabaseConfig } from './supabase-client.js';
+import { showFeedbackPopup } from './feedback.js';
 
 const adminEnv = window.SMAJ_ENV;
 if (!adminEnv) console.error('[SMAJ Admin] assets/js/env.js is missing or did not load before admin.js.');
@@ -943,9 +944,7 @@ function getRecordTime(record) {
 }
 
 function setStatus(element, message, type) {
-    if (!element) return;
-    element.textContent = message;
-    element.dataset.status = type;
+    showFeedbackPopup(element, message, type);
 }
 
 function setText(selector, value) {

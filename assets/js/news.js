@@ -1,5 +1,6 @@
 import { smajEnv } from "./env-module.js";
 import { supabaseClient } from "./supabase-client.js";
+import { showFeedbackPopup } from "./feedback.js";
 
 const supabaseConfig = {
     table: smajEnv.SUPABASE_NEWS_TABLE || "news_articles"
@@ -286,9 +287,7 @@ function formatDate(value) {
 }
 
 function setStatus(element, message, type) {
-    if (!element) return;
-    element.textContent = message;
-    element.dataset.status = type;
+    showFeedbackPopup(element, message, type);
 }
 
 function escapeHtml(value) {

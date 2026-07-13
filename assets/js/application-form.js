@@ -1,5 +1,6 @@
 import { smajEnv } from "./env-module.js";
 import { newsImagesBucket, supabaseClient, supabaseConfig as sharedSupabaseConfig, verifyUploadBucket } from "./supabase-client.js";
+import { showFeedbackPopup } from "./feedback.js";
 
 const supabaseConfig = {
     table: "application"
@@ -137,8 +138,7 @@ function initFileFeedback() {
             if (!feedback) return;
 
             if (!files.length) {
-                feedback.textContent = '';
-                feedback.dataset.status = '';
+                showFeedbackPopup(feedback, '', '');
                 return;
             }
 
@@ -151,8 +151,7 @@ function initFileFeedback() {
 
             if (!validation.valid) {
                 input.value = '';
-                feedback.textContent = validation.message;
-                feedback.dataset.status = 'error';
+                showFeedbackPopup(feedback, validation.message, 'error');
                 return;
             }
 
@@ -162,15 +161,17 @@ function initFileFeedback() {
 
             if (input.multiple && imageFiles.length > 3) {
                 input.value = '';
-                feedback.textContent = 'Please select up to 3 images only.';
-                feedback.dataset.status = 'error';
+                showFeedbackPopup(feedback, 'Please select up to 3 images only.', 'error');
                 return;
             }
 
-            feedback.textContent = files.length === 1
-                ? `${files[0].name} selected.`
-                : `${files.length} files selected. Upload will complete when you submit.`;
-            feedback.dataset.status = 'info';
+            showFeedbackPopup(
+                feedback,
+                files.length === 1
+                    ? `${files[0].name} selected.`
+                    : `${files.length} files selected. Upload will complete when you submit.`,
+                'info'
+            );
         });
     });
 }
@@ -374,10 +375,11 @@ function setFileUploadSuccess(files) {
 
         if (!feedback) return;
 
-        feedback.textContent = count === 1
-            ? 'Upload successful.'
-            : `${count} files uploaded successfully.`;
-        feedback.dataset.status = 'success';
+        showFeedbackPopup(
+            feedback,
+            count === 1 ? 'Upload successful.' : `${count} files uploaded successfully.`,
+            'success'
+        );
     });
 }
 
@@ -391,8 +393,7 @@ function setFileUploadError(files) {
 
         if (!feedback) return;
 
-        feedback.textContent = 'Upload failed. Please try again.';
-        feedback.dataset.status = 'error';
+        showFeedbackPopup(feedback, 'Upload failed. Please try again.', 'error');
     });
 }
 
@@ -939,9 +940,7 @@ function initEditApplication() {
 }
 
 function setStatus(status, message, type) {
-    if (!status) return;
-    status.textContent = message;
-    status.dataset.status = type;
+    showFeedbackPopup(status, message, type);
 }
 
 function setButtonLoading(button, isLoading) {
