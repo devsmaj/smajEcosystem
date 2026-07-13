@@ -25,19 +25,3 @@ try {
 console.info("[SMAJ Supabase] SUPABASE_URL:", supabaseConfig.url);
 console.info("[SMAJ Supabase] Project reference:", projectReference);
 console.info("[SMAJ Supabase] Upload bucket:", newsImagesBucket);
-
-export async function verifyUploadBucket() {
-    const { data, error } = await supabaseClient.storage.listBuckets();
-    const bucketNames = (data || []).map(function (bucket) { return bucket.name; });
-
-    console.info("[SMAJ Supabase] Storage buckets:", bucketNames);
-
-    if (error) {
-        console.error("[SMAJ Supabase] Unable to list Storage buckets.", error);
-        throw error;
-    }
-
-    if (!bucketNames.includes(newsImagesBucket)) {
-        throw new Error("Storage bucket 'news-images' not found. Please create it in Supabase Storage.");
-    }
-}

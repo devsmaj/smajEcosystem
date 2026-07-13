@@ -1,5 +1,5 @@
 import { smajEnv } from "./env-module.js";
-import { newsImagesBucket, supabaseClient, verifyUploadBucket } from "./supabase-client.js";
+import { supabaseClient } from "./supabase-client.js";
 import { showFeedbackPopup } from "./feedback.js";
 
 const supabaseConfig = {
@@ -98,7 +98,7 @@ async function loadNews() {
         setStatus(status, `Loaded ${state.articles.length} news articles.`, "success");
     } catch (error) {
         console.error(error);
-        setStatus(status, getAdminErrorMessage(error), "error");
+        setStatus(status, error.isStorageUploadError ? error.message : getAdminErrorMessage(error), "error");
         const list = document.querySelector("[data-news-list]");
         if (list) list.innerHTML = `<tr><td colspan="6">${escapeHtml(getAdminErrorMessage(error))}</td></tr>`;
     }
@@ -292,7 +292,7 @@ async function upsertNewsArticle(actionButton) {
         console.info("[SMAJ News] Authenticated user.id:", user.id);
 
         const payload = collectArticlePayload(form);
-        payload.featured_image = await uploadFeaturedImage(payload.featured_image);
+        payload.featured_image = await uploadFeaturedImage(payload.featured_image, user.id);
 
         if (!state.editingId) {
             payload.created_by = user.id;
@@ -324,7 +324,7 @@ async function upsertNewsArticle(actionButton) {
     }
 }
 
-async function uploadFeaturedImage(existingUrl) {
+async function uploadFeaturedImage(existingUrl, authenticatedUserId) {
     const input = document.querySelector("[data-news-image-file]");
     const feedback = document.querySelector("[data-news-image-feedback]");
     const file = input?.files?.[0];
@@ -340,21 +340,37 @@ async function uploadFeaturedImage(existingUrl) {
     }
 
     setStatus(feedback, "Uploading image...", "info");
-    await verifyUploadBucket();
     const slug = document.querySelector("[data-news-slug]")?.value || "news";
-    const storagePath = `news/${slug}/${Date.now()}-${sanitizeFileName(file.name)}`;
-    const { error } = await supabaseClient.storage.from('news-images').upload(storagePath, file, {
-        contentType: file.type,
+    const filePath = `news/${slug}/${Date.now()}-${sanitizeFileName(file.name)}`;
+    const supabase = supabaseClient;
+    const bucketName = "news-images";
+    const bucket = supabase.storage.from("news-images");
+
+    console.info("[SMAJ News] Upload bucket:", bucketName);
+    console.info("[SMAJ News] Upload file path:", filePath);
+    console.info("[SMAJ News] Authenticated user ID:", authenticatedUserId);
+
+    const { data, error } = await bucket.upload(filePath, file, {
+        cacheControl: "3600",
         upsert: false
     });
 
-    if (error) throw error;
+    if (error) {
+        console.error("[SMAJ News] Upload error:", error);
+        const uploadError = new Error(error.message);
+        uploadError.isStorageUploadError = true;
+        throw uploadError;
+    }
 
-    const { data } = supabaseClient.storage.from('news-images').getPublicUrl(storagePath);
+    console.info("[SMAJ News] Upload result:", data);
+
+    const { data: publicUrlData } = supabase.storage
+        .from("news-images")
+        .getPublicUrl(filePath);
     setStatus(feedback, "Image uploaded.", "success");
     if (input) input.value = "";
 
-    return data.publicUrl;
+    return publicUrlData.publicUrl;
 }
 
 function collectArticlePayload(form) {

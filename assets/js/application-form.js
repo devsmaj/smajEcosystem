@@ -1,12 +1,10 @@
 import { smajEnv } from "./env-module.js";
-import { newsImagesBucket, supabaseClient, supabaseConfig as sharedSupabaseConfig, verifyUploadBucket } from "./supabase-client.js";
+import { newsImagesBucket, supabaseClient, supabaseConfig as sharedSupabaseConfig } from "./supabase-client.js";
 import { showFeedbackPopup } from "./feedback.js";
 
 const supabaseConfig = {
     table: "application"
 };
-
-const missingNewsImagesBucketMessage = "Storage bucket 'news-images' not found. Please create it in Supabase Storage.";
 
 const emailJsConfig = {
     publicKey: smajEnv.EMAILJS_PUBLIC_KEY,
@@ -255,8 +253,6 @@ function validateSelectedFiles(files) {
 async function uploadApplicationFiles(applicationId, applicationType, files) {
     const uploaded = [];
     const folder = getApplicationFolder(applicationType);
-    await verifyUploadBucket();
-
     for (const item of files) {
         const storagePath = `applications/${folder}/${applicationId}/${Date.now()}-${sanitizeFileName(item.file.name)}`;
         const uploadResult = await withTimeout(
@@ -446,10 +442,6 @@ async function parseSupabaseError(response) {
     try {
         const error = JSON.parse(text);
 
-        if (error.message === 'Bucket not found') {
-            return missingNewsImagesBucketMessage;
-        }
-
         if (/row-level security/i.test(error.message || error.error || text)) {
             return 'Supabase database insert is blocked by Row Level Security. Add an anon insert policy for the application table.';
         }
@@ -464,10 +456,6 @@ function parseSupabaseClientError(error) {
     const message = error && (error.message || error.error_description || error.details || error.hint);
 
     if (!message) return '';
-
-    if (message === 'Bucket not found') {
-        return missingNewsImagesBucketMessage;
-    }
 
     if (/row-level security/i.test(message)) {
         return `Supabase ${supabaseConfig.table} insert is blocked by Row Level Security. Add an anon insert policy for the application table.`;
