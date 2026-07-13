@@ -1376,6 +1376,9 @@ section {
 
 .feedback-popup[data-status="error"] {
     border-left-color: #f87171;
+    bottom: auto;
+    top: 24px;
+    transform: translate(-50%, -18px);
 }
 
 .feedback-popup-visible {
