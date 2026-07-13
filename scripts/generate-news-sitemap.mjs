@@ -2,8 +2,8 @@ import fs from "node:fs/promises";
 
 const siteUrl = "https://smaj.org";
 const sitemapPath = new URL("../sitemap.xml", import.meta.url);
-const supabaseUrl = process.env.SUPABASE_URL || "https://fqfcxitcnseyrunglkqy.supabase.co";
-const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY || "sb_publishable_SA3t6uGPtSDPofYVa1XGVQ_qOaVZn7Y";
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY;
 const newsTable = process.env.SUPABASE_NEWS_TABLE || "news_articles";
 
 const staticUrls = [

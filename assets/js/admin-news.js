@@ -1,20 +1,15 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { smajEnv } from "./env-module.js";
+import { newsImagesBucket, supabaseClient, verifyUploadBucket } from "./supabase-client.js";
 
 const supabaseConfig = {
-    url: smajEnv.SUPABASE_URL,
-    publishableKey: smajEnv.SUPABASE_PUBLISHABLE_KEY,
     table: smajEnv.SUPABASE_NEWS_TABLE || "news_articles"
 };
 
-const newsImagesBucket = "news-images";
-const missingNewsImagesBucketMessage = "Storage bucket 'news-images' not found. Please create it in Supabase Storage.";
-
-const supabaseClient = createClient(supabaseConfig.url, supabaseConfig.publishableKey);
 const adminConfig = {
     loginPath: "/admin-login.html",
     dashboardPath: "/admin-news.html"
 };
+const createNewsDraftStorageKey = "smaj-admin-create-news-draft";
 
 const state = {
     articles: [],
@@ -52,6 +47,7 @@ function initAdminLogout() {
 }
 
 function initNewsAdmin() {
+    const newsForm = document.querySelector("[data-news-form]");
     document.querySelector("[data-news-refresh]")?.addEventListener("click", loadNews);
     document.querySelector("[data-news-new]")?.addEventListener("click", startCreateNews);
     document.querySelector("[data-news-close-form]")?.addEventListener("click", closeNewsForm);
@@ -59,7 +55,9 @@ function initNewsAdmin() {
     document.querySelector("[data-news-search]")?.addEventListener("input", renderNews);
     document.querySelector("[data-news-status-filter]")?.addEventListener("change", renderNews);
     document.querySelector("[data-news-list]")?.addEventListener("click", handleNewsAction);
-    document.querySelector("[data-news-form]")?.addEventListener("submit", saveNewsArticle);
+    newsForm?.addEventListener("submit", saveNewsArticle);
+    newsForm?.addEventListener("input", saveCreateNewsFormDraft);
+    newsForm?.addEventListener("change", saveCreateNewsFormDraft);
     document.querySelector("[data-news-save-draft]")?.addEventListener("click", saveDraftArticle);
     document.querySelector("[data-news-preview]")?.addEventListener("click", showNewsPreview);
     document.querySelector("[data-news-close-preview]")?.addEventListener("click", closeNewsPreview);
@@ -78,6 +76,7 @@ function initNewsAdmin() {
 
     loadNews();
     subscribeToNewsRealtime();
+    restoreCreateNewsFormDraft();
 }
 
 async function loadNews() {
@@ -216,7 +215,7 @@ function startCreateNews() {
     const form = document.querySelector("[data-news-form]");
     form?.reset();
     setText("[data-news-form-heading]", "Create News");
-    setDefaultPublishedDate();
+    if (!restoreCreateNewsFormDraft()) setDefaultPublishedDate();
     showFormPanel();
 }
 
@@ -291,6 +290,7 @@ async function upsertNewsArticle(actionButton) {
         if (error) throw error;
 
         const saved = normalizeArticle(data || Object.assign({ id: state.editingId }, payload));
+        clearCreateNewsFormDraft();
         state.editingId = saved.id;
         state.slugTouched = true;
         setStatus(status, `${saved.status === "published" ? "Published" : "Draft saved"}: ${saved.title}`, "success");
@@ -320,7 +320,7 @@ async function uploadFeaturedImage(existingUrl) {
     }
 
     setStatus(feedback, "Uploading image...", "info");
-    await verifyNewsImagesBucket();
+    await verifyUploadBucket();
     const slug = document.querySelector("[data-news-slug]")?.value || "news";
     const storagePath = `news/${slug}/${Date.now()}-${sanitizeFileName(file.name)}`;
     const { error } = await supabaseClient.storage.from('news-images').upload(storagePath, file, {
@@ -335,16 +335,6 @@ async function uploadFeaturedImage(existingUrl) {
     if (input) input.value = "";
 
     return data.publicUrl;
-}
-
-async function verifyNewsImagesBucket() {
-    const { data, error } = await supabaseClient.storage.getBucket(newsImagesBucket);
-
-    if (!data || /bucket not found|not found|404/i.test(String(error?.message || ""))) {
-        throw new Error(missingNewsImagesBucketMessage);
-    }
-
-    if (error) throw error;
 }
 
 function collectArticlePayload(form) {
@@ -371,6 +361,58 @@ function collectArticlePayload(form) {
         updated_at: now,
         created_by: state.adminUser?.id || null
     };
+}
+
+function saveCreateNewsFormDraft() {
+    if (state.editingId) return;
+
+    const form = document.querySelector("[data-news-form]");
+    if (!form) return;
+
+    const fields = {};
+    Array.from(form.elements).forEach(function (element) {
+        if (!element.name || element.type === "file" || element.type === "button" || element.type === "submit" || element.name === "id") return;
+        fields[element.name] = element.value;
+    });
+
+    try {
+        window.localStorage.setItem(createNewsDraftStorageKey, JSON.stringify(fields));
+    } catch (error) {
+        console.warn("[SMAJ News] Could not save the create-news form locally.", error);
+    }
+}
+
+function restoreCreateNewsFormDraft() {
+    const form = document.querySelector("[data-news-form]");
+    if (!form || state.editingId) return false;
+
+    try {
+        const savedDraft = window.localStorage.getItem(createNewsDraftStorageKey);
+        if (!savedDraft) return false;
+
+        const fields = JSON.parse(savedDraft);
+        Object.entries(fields).forEach(function ([name, value]) {
+            const field = form.elements.namedItem(name);
+            if (field && field.type !== "file") field.value = String(value ?? "");
+        });
+
+        state.slugTouched = Boolean(fields.slug);
+        setText("[data-news-form-heading]", "Create News");
+        showFormPanel();
+        setStatus(document.querySelector("[data-news-status]"), "Unsaved create-news input restored after refresh.", "info");
+        return true;
+    } catch (error) {
+        console.warn("[SMAJ News] Could not restore the locally saved create-news form.", error);
+        return false;
+    }
+}
+
+function clearCreateNewsFormDraft() {
+    try {
+        window.localStorage.removeItem(createNewsDraftStorageKey);
+    } catch (error) {
+        console.warn("[SMAJ News] Could not clear the locally saved create-news form.", error);
+    }
 }
 
 function handleNewsAction(event) {

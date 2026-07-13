@@ -1,13 +1,14 @@
+import { supabaseClient, supabaseConfig as sharedSupabaseConfig } from './supabase-client.js';
+
 const adminEnv = window.SMAJ_ENV;
 if (!adminEnv) console.error('[SMAJ Admin] assets/js/env.js is missing or did not load before admin.js.');
 const supabaseConfig = {
-    url: window.SMAJ_ENV?.SUPABASE_URL?.trim() || '',
-    publishableKey: window.SMAJ_ENV?.SUPABASE_PUBLISHABLE_KEY?.trim() || '',
+    url: sharedSupabaseConfig.url,
+    publishableKey: sharedSupabaseConfig.publishableKey,
     table: "application"
 };
 if (!supabaseConfig.url) console.error('[SMAJ Admin] window.SMAJ_ENV.SUPABASE_URL is empty.');
 if (!supabaseConfig.publishableKey) console.error('[SMAJ Admin] window.SMAJ_ENV.SUPABASE_PUBLISHABLE_KEY is empty.');
-if (!window.supabase?.createClient) console.error('[SMAJ Admin] Supabase JS CDN is missing or did not load before admin.js.');
 
 const applicationColumns = [
     'application_id',
@@ -41,10 +42,6 @@ const emailJsConfig = {
     userTemplateId: adminEnv?.EMAILJS_USER_TEMPLATE_ID || "template_5h069ek",
     adminEmail: adminEnv?.SMAJ_CONTACT_EMAIL || "contact@smaj.org"
 };
-
-const supabaseClient = window.supabase?.createClient && supabaseConfig.url && supabaseConfig.publishableKey
-    ? window.supabase.createClient(supabaseConfig.url, supabaseConfig.publishableKey)
-    : null;
 
 const adminConfig = {
     loginPath: "/admin-login.html",

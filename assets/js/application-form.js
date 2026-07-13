@@ -1,13 +1,10 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { smajEnv } from "./env-module.js";
+import { newsImagesBucket, supabaseClient, supabaseConfig as sharedSupabaseConfig, verifyUploadBucket } from "./supabase-client.js";
 
 const supabaseConfig = {
-    url: smajEnv.SUPABASE_URL,
-    publishableKey: smajEnv.SUPABASE_PUBLISHABLE_KEY,
     table: "application"
 };
 
-const newsImagesBucket = "news-images";
 const missingNewsImagesBucketMessage = "Storage bucket 'news-images' not found. Please create it in Supabase Storage.";
 
 const emailJsConfig = {
@@ -18,10 +15,8 @@ const emailJsConfig = {
     adminEmail: smajEnv.SMAJ_CONTACT_EMAIL
 };
 
-const supabaseClient = createClient(supabaseConfig.url, supabaseConfig.publishableKey);
-
 const appState = {
-    supabaseReady: Boolean(supabaseConfig.url && supabaseConfig.publishableKey)
+    supabaseReady: Boolean(sharedSupabaseConfig.url && sharedSupabaseConfig.publishableKey)
 };
 
 const applicationRealtimeChannels = new Map();
@@ -259,7 +254,7 @@ function validateSelectedFiles(files) {
 async function uploadApplicationFiles(applicationId, applicationType, files) {
     const uploaded = [];
     const folder = getApplicationFolder(applicationType);
-    await verifyNewsImagesBucket();
+    await verifyUploadBucket();
 
     for (const item of files) {
         const storagePath = `applications/${folder}/${applicationId}/${Date.now()}-${sanitizeFileName(item.file.name)}`;
@@ -437,17 +432,7 @@ function sanitizeFileName(fileName) {
 }
 
 function getSupabasePublicUrl(storagePath) {
-    return `${supabaseConfig.url}/storage/v1/object/public/news-images/${storagePath}`;
-}
-
-async function verifyNewsImagesBucket() {
-    const { data, error } = await supabaseClient.storage.getBucket(newsImagesBucket);
-
-    if (!data || /bucket not found|not found|404/i.test(String(error?.message || ''))) {
-        throw new Error(missingNewsImagesBucketMessage);
-    }
-
-    if (error) throw error;
+    return `${sharedSupabaseConfig.url}/storage/v1/object/public/news-images/${storagePath}`;
 }
 
 async function parseSupabaseError(response) {

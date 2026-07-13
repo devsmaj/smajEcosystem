@@ -1,13 +1,10 @@
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
 import { smajEnv } from "./env-module.js";
+import { supabaseClient } from "./supabase-client.js";
 
 const supabaseConfig = {
-    url: smajEnv.SUPABASE_URL,
-    publishableKey: smajEnv.SUPABASE_PUBLISHABLE_KEY,
     table: smajEnv.SUPABASE_NEWS_TABLE || "news_articles"
 };
 
-const supabaseClient = createClient(supabaseConfig.url, supabaseConfig.publishableKey);
 const defaultImage = "https://smaj.org/assets/images/logo.jpg";
 const fallbackArticles = [
     {

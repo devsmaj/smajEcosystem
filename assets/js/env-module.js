@@ -1,6 +1,6 @@
 export const smajEnv = {
-    SUPABASE_URL: window.SMAJ_ENV?.SUPABASE_URL || "https://fqfcxitcnseyrunglkqy.supabase.co",
-    SUPABASE_PUBLISHABLE_KEY: window.SMAJ_ENV?.SUPABASE_PUBLISHABLE_KEY || "sb_publishable_SA3t6uGPtSDPofYVa1XGVQ_qOaVZn7Y",
+    SUPABASE_URL: window.SMAJ_ENV?.SUPABASE_URL?.trim() || "",
+    SUPABASE_PUBLISHABLE_KEY: window.SMAJ_ENV?.SUPABASE_PUBLISHABLE_KEY?.trim() || "",
     SUPABASE_APPLICATION_TABLE: window.SMAJ_ENV?.SUPABASE_APPLICATION_TABLE || "application",
     SUPABASE_NEWS_TABLE: window.SMAJ_ENV?.SUPABASE_NEWS_TABLE || "news_articles",
     EMAILJS_PUBLIC_KEY: window.SMAJ_ENV?.EMAILJS_PUBLIC_KEY || "8P_4KsqS5t0soM0gX",
