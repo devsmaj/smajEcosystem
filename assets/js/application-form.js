@@ -300,14 +300,14 @@ async function saveApplicationRecord(applicationId, record) {
         files: record.files
     };
 
-    const saveResult = await withTimeout(
+    const { error } = await withTimeout(
         supabaseClient.from(supabaseConfig.table).insert(row),
         20000,
         'Saving application timed out. Please check Supabase table policies and try again.'
     );
 
-    if (saveResult.error) {
-        throw new Error(parseSupabaseClientError(saveResult.error) || 'Could not save application in Supabase database.');
+    if (error) {
+        throw new Error(parseSupabaseClientError(error) || 'Could not save application in Supabase database.');
     }
 }
 

@@ -54,19 +54,21 @@ grant execute on function public.is_smaj_admin() to authenticated;
 -- IMPORTANT: the table name is public.application (singular).
 alter table public.application enable row level security;
 
+drop policy if exists "Allow public application submissions" on public.application;
 drop policy if exists "Allow public application inserts" on public.application;
+drop policy if exists "Allow anonymous inserts" on public.application;
 drop policy if exists "Allow authenticated admins to read application" on public.application;
 drop policy if exists "SMAJ admins can select applications" on public.application;
 drop policy if exists "Allow authenticated admins to update application" on public.application;
 
-grant insert on table public.application to anon;
+grant insert on table public.application to anon, authenticated;
 grant select, update on table public.application to authenticated;
 
-create policy "Allow public application inserts"
+create policy "Allow public application submissions"
 on public.application
 for insert
-to anon
-with check (status = 'pending');
+to anon, authenticated
+with check (true);
 
 create policy "SMAJ admins can select applications"
 on public.application
