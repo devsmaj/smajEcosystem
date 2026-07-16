@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Team Admin | SMAJ Ecosystem</title>
+    <link rel="icon" type="image/png" sizes="48x48" href="/assets/images/favicon-48x48.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/admin.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css">
+</head>
+<body class="admin-body" data-admin-page="team">
+    <header class="admin-topbar">
+        <div class="admin-topbar-left">
+            <a href="/admin.html" class="admin-brand"><img src="/assets/images/logo.jpg" alt="SMAJ Ecosystem Logo"><span>SMAJ Admin</span></a>
+            <nav class="admin-sidebar" aria-label="Admin sections">
+                <a class="admin-sidebar-link" href="/admin.html"><i class="bx bx-list-check"></i>Applications</a>
+                <a class="admin-sidebar-link" href="/admin-news.html"><i class="bx bx-news"></i>News</a>
+                <a class="admin-sidebar-link active" href="/admin-team.html"><i class="bx bx-group"></i>Team</a>
+            </nav>
+        </div>
+        <nav class="admin-actions"><a href="/about/" class="btn btn-outline">View About</a><button type="button" class="btn btn-primary" data-admin-logout>Logout</button></nav>
+    </header>
+
+    <main class="admin-main">
+        <section class="admin-hero">
+            <div><span class="application-kicker">Team Management</span><h1>About Team</h1><p>Add, edit, publish, order, and remove team members and their social profiles.</p></div>
+            <div class="admin-hero-actions"><button type="button" class="btn btn-outline" data-team-refresh><i class="bx bx-refresh"></i>Refresh</button><button type="button" class="btn btn-accent" data-team-new><i class="bx bx-plus"></i>Add Member</button></div>
+        </section>
+
+        <section class="admin-stat-grid admin-team-stats" aria-label="Team counts">
+            <article class="admin-stat-card"><span>All Members</span><strong data-team-count-all>0</strong></article>
+            <article class="admin-stat-card"><span>Published</span><strong data-team-count-published>0</strong></article>
+            <article class="admin-stat-card"><span>Drafts</span><strong data-team-count-draft>0</strong></article>
+        </section>
+
+        <section class="admin-panel" data-team-list-panel>
+            <div class="admin-panel-header"><div><h2>Team Members</h2><p>Published members appear automatically on the About page.</p></div><p class="application-status" data-team-status aria-live="polite"></p></div>
+            <div class="admin-team-grid" data-team-list><p>Loading team members...</p></div>
+        </section>
+
+        <section class="admin-panel admin-team-form-panel" data-team-form-panel hidden>
+            <div class="admin-panel-header"><div><h2 data-team-form-title>Add Team Member</h2><p>Complete the profile, add a picture and social links, then publish when ready.</p></div><button type="button" class="btn btn-outline" data-team-close><i class="bx bx-x"></i>Close</button></div>
+            <p class="application-status" data-team-form-status aria-live="polite"></p>
+            <form data-team-form>
+                <input type="hidden" name="id">
+                <input type="hidden" name="photo_url">
+                <input type="hidden" name="photo_path">
+                <div class="admin-team-editor">
+                    <div class="admin-team-photo-editor">
+                        <div class="admin-team-photo-preview" data-team-photo-preview><i class="bx bx-user"></i></div>
+                        <div class="form-group"><label for="teamPhoto">Profile Picture</label><input id="teamPhoto" name="photo_file" type="file" accept="image/png,image/jpeg,image/webp"><span class="file-feedback" data-team-photo-feedback>PNG, JPG or WebP. Maximum 5 MB.</span></div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group"><label for="teamName">Full Name</label><input id="teamName" name="full_name" type="text" required></div>
+                        <div class="form-group"><label for="teamTitle">Job Title</label><input id="teamTitle" name="job_title" type="text" required></div>
+                        <div class="form-group form-wide"><label for="teamBiography">Biography</label><textarea id="teamBiography" name="biography" required></textarea></div>
+                        <div class="form-group"><label for="teamEmail">Email</label><input id="teamEmail" name="email" type="email"></div>
+                        <div class="form-group"><label for="teamOrder">Display Order</label><input id="teamOrder" name="display_order" type="number" min="0" value="0" required></div>
+                        <div class="form-group form-wide"><label for="teamSkills">Skills / Focus Areas</label><textarea id="teamSkills" name="skills" placeholder="One skill per line"></textarea></div>
+                        <div class="form-group"><label for="teamLinkedIn">LinkedIn URL</label><input id="teamLinkedIn" name="linkedin" type="url"></div>
+                        <div class="form-group"><label for="teamGithub">GitHub URL</label><input id="teamGithub" name="github" type="url"></div>
+                        <div class="form-group"><label for="teamX">X URL</label><input id="teamX" name="x" type="url"></div>
+                        <div class="form-group"><label for="teamFacebook">Facebook URL</label><input id="teamFacebook" name="facebook" type="url"></div>
+                        <div class="form-group"><label for="teamInstagram">Instagram URL</label><input id="teamInstagram" name="instagram" type="url"></div>
+                        <div class="form-group"><label for="teamTelegram">Telegram URL</label><input id="teamTelegram" name="telegram" type="url"></div>
+                        <div class="form-group"><label for="teamTikTok">TikTok URL</label><input id="teamTikTok" name="tiktok" type="url"></div>
+                        <div class="form-group"><label for="teamYouTube">YouTube URL</label><input id="teamYouTube" name="youtube" type="url"></div>
+                        <div class="form-group form-wide admin-team-publish"><label><input name="is_published" type="checkbox"> Publish this member on the About page</label></div>
+                    </div>
+                </div>
+                <div class="form-actions"><button type="button" class="btn btn-outline" data-team-cancel>Cancel</button><button type="submit" class="btn btn-primary" data-team-save><i class="bx bx-save"></i>Save Member</button></div>
+            </form>
+        </section>
+    </main>
+    <script src="/assets/js/env.js"></script>
+    <script type="module" src="/assets/js/admin-team.js"></script>
+</body>
+</html>
