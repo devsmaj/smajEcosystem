@@ -301,12 +301,13 @@ async function saveApplicationRecord(applicationId, record) {
     };
 
     const { error } = await withTimeout(
-        supabaseClient.from(supabaseConfig.table).insert(row),
+        supabaseClient.from("application").insert(row),
         20000,
         'Saving application timed out. Please check Supabase table policies and try again.'
     );
 
     if (error) {
+        console.error("Application insert failed:", error);
         throw new Error(parseSupabaseClientError(error) || 'Could not save application in Supabase database.');
     }
 }
@@ -432,36 +433,20 @@ function getSupabasePublicUrl(storagePath) {
     return `${sharedSupabaseConfig.url}/storage/v1/object/public/news-images/${storagePath}`;
 }
 
-async function parseSupabaseError(response) {
-    const text = await response.text().catch(function () {
-        return '';
-    });
-
-    if (!text) return '';
-
-    try {
-        const error = JSON.parse(text);
-
-        if (/row-level security/i.test(error.message || error.error || text)) {
-            return 'Supabase database insert is blocked by Row Level Security. Add an anon insert policy for the application table.';
-        }
-
-        return error.message || error.error || text;
-    } catch (parseError) {
-        return text;
-    }
-}
-
 function parseSupabaseClientError(error) {
-    const message = error && (error.message || error.error_description || error.details || error.hint);
+    if (!error) return '';
 
-    if (!message) return '';
+    const parts = [error.message, error.details, error.hint]
+        .filter(Boolean)
+        .filter(function (value, index, values) {
+            return values.indexOf(value) === index;
+        });
 
-    if (/row-level security/i.test(message)) {
-        return `Supabase ${supabaseConfig.table} insert is blocked by Row Level Security. Add an anon insert policy for the application table.`;
+    if (error.code) {
+        parts.push(`Postgres error code: ${error.code}`);
     }
 
-    return message;
+    return parts.join(' — ');
 }
 
 function withTimeout(promise, timeoutMs, message) {
